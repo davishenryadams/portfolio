@@ -261,19 +261,19 @@
         oninput="P.topN=+this.value;document.getElementById('v-tn').textContent=this.value;dRefresh()"/>
     </div>
     <div class="param-card" style="background:var(--accent-soft);border-color:rgba(192,57,43,.2)">
-      <div class="sec" style="margin-top:0;color:var(--accent)">Backend</div>
-      <div style="font-size:.8rem;color:var(--text-2);margin-bottom:8px">
-        <code style="font-family:var(--mono)">http://localhost:8000</code>
-      </div>
-      <div style="font-size:.74rem;color:var(--text-3)">
-        Start: <code style="font-family:var(--mono);font-size:.71rem">cd ~/Documents/nba-parlay && ./start.sh</code>
-      </div>
+      <div class="sec" style="margin-top:0;color:var(--accent)">Backend URL</div>
+      <input id="api-url-input" type="url" placeholder="http://localhost:8000 or https://xxxx.ngrok-free.app"
+        style="width:100%;background:var(--surface-3);border:1px solid var(--border-2);color:var(--text);font-family:var(--mono);font-size:.74rem;padding:8px 12px;border-radius:8px;outline:none;margin-bottom:8px;display:block"
+        oninput="updateApiUrl(this.value)" />
+      <div style="font-size:.73rem;color:var(--text-3);margin-bottom:6px">Paste your ngrok URL to connect from phone. Saves automatically.</div>
+      <div style="font-size:.72rem;color:var(--text-3)">Local: <code style="font-family:var(--mono);font-size:.69rem">cd ~/Documents/nba-parlay && ./start.sh</code></div>
+      <div style="font-size:.72rem;color:var(--text-3);margin-top:4px">Tunnel: <code style="font-family:var(--mono);font-size:.69rem">cd ~/Documents/nba-parlay && ./ngrok.sh</code></div>
     </div>
   </div>
 </div>
 
 <script>
-const API='http://localhost:8000';
+let API=localStorage.getItem('parlayApiUrl')||'http://localhost:8000';
 const P={minEdge:.03,minEv:1,sentWeight:3,maxLegs:3,topN:10,maxRig:10};
 let sortM='ev',activeCat='all',minEvF=3,allMkts=[],sigs=[],pars=[],online=false,rTimer=null;
 
@@ -501,11 +501,16 @@ function sw(n){document.querySelectorAll('.panel').forEach(p=>p.classList.remove
 function setSort(m){sortM=m;document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));document.getElementById('sb-'+m).classList.add('active');reRender();}
 function setMinEv(v){minEvF=+v;reRender();}
 
+// ── API URL ──
+function updateApiUrl(v){v=v.trim();if(v){API=v;localStorage.setItem('parlayApiUrl',v);checkBE();}}
+
 // ── INIT ──
 (async()=>{
+  const inp=document.getElementById('api-url-input');
+  if(inp)inp.value=API;
   const ok=await checkBE();
   if(ok){await loadMkts();}
-  else{document.getElementById('sig-list').innerHTML=`<div class="empty"><strong>Backend offline</strong>Open Terminal and run:<br><br><code style="font-family:var(--mono);font-size:.78rem;background:var(--surface-2);padding:6px 12px;border-radius:6px;display:inline-block">cd ~/Documents/nba-parlay && ./start.sh</code><br><br>Then tap ↻ Refresh.</div>`;}
+  else{document.getElementById('sig-list').innerHTML=`<div class="empty"><strong>Backend offline</strong>Open Terminal and run:<br><br><code style="font-family:var(--mono);font-size:.78rem;background:var(--surface-2);padding:6px 12px;border-radius:6px;display:inline-block">cd ~/Documents/nba-parlay && ./start.sh</code><br><br>For phone access also run <code style="font-family:var(--mono);font-size:.78rem;background:var(--surface-2);padding:6px 12px;border-radius:6px;display:inline-block">./ngrok.sh</code> and paste the URL in Params.<br><br>Then tap ↻ Refresh.</div>`;}
 })();
 </script>
 </body>
