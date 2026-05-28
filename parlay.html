@@ -284,8 +284,9 @@ function confLbl(e){return e>=.10?'HIGH':e>=.05?'MED':'LOW';}
 function dRefresh(){clearTimeout(rTimer);rTimer=setTimeout(reRender,300);}
 
 // ── BACKEND ──
+const ngrokH={'ngrok-skip-browser-warning':'1'};
 async function checkBE(){
-  try{const r=await fetch(`${API}/api/health`,{signal:AbortSignal.timeout(3000)});if(r.ok){online=true;setStatus('live');document.getElementById('backend-banner').classList.remove('show');return true;}}catch(e){}
+  try{const r=await fetch(`${API}/api/health`,{signal:AbortSignal.timeout(3000),headers:ngrokH});if(r.ok){online=true;setStatus('live');document.getElementById('backend-banner').classList.remove('show');return true;}}catch(e){}
   online=false;setStatus('offline');document.getElementById('backend-banner').classList.add('show');return false;
 }
 function setStatus(m){
@@ -297,7 +298,7 @@ function setStatus(m){
 async function loadMkts(){
   if(!online)return;setStatus('loading');
   try{
-    const r=await fetch(`${API}/api/markets?min_edge=${P.minEdge}&limit=500`);
+    const r=await fetch(`${API}/api/markets?min_edge=${P.minEdge}&limit=500`,{headers:ngrokH});
     const d=await r.json();
     allMkts=d.markets||[];
     setStatus('live');
@@ -436,7 +437,7 @@ async function loadSent(ticker,enc,i,e){
   stEl.textContent='loading…';
   bdEl.innerHTML=`<div style="padding:6px;font-size:.75rem;color:var(--text-3)"><span class="spinner"></span>Scanning sources…</div>`;
   try{
-    const r=await fetch(`${API}/api/sentiment?q=${encodeURIComponent(title)}`);
+    const r=await fetch(`${API}/api/sentiment?q=${encodeURIComponent(title)}`,{headers:ngrokH});
     const d=await r.json();
     const sc=d.composite;
     const col=sc>.05?'var(--green)':sc<-.05?'var(--accent)':'var(--text-2)';
