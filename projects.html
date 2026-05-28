@@ -30,182 +30,99 @@
     <div class="wrap">
 
       <h1 class="page-title">Projects</h1>
-      <p class="page-subtitle">Engineering work, research builds, and things I made for fun.</p>
+      <p class="page-subtitle">ML systems, aircraft, and everything in between.</p>
 
-      <!-- FEATURED -->
-      <p class="projects-section-label">Featured</p>
+      <!-- ML RESEARCH & INTERNSHIP -->
+      <p class="projects-section-label">Research &amp; Internship Work</p>
       <div class="projects-grid">
+
+        <!-- Zebra Herd Neural Net -->
+        <div class="proj-card">
+          <div class="proj-card__img">
+            <div class="img-placeholder" style="height:190px;">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="3"/><path d="M3 12h3m12 0h3M12 3v3m0 12v3M6.34 6.34l2.12 2.12m7.08 7.08l2.12 2.12M17.66 6.34l-2.12 2.12M8.46 15.54l-2.12 2.12"/>
+              </svg>
+              <span>project photo</span>
+            </div>
+          </div>
+          <div class="proj-card__body">
+            <p class="proj-card__category">Research &middot; Princeton</p>
+            <h3 class="proj-card__title">Collective Animal Herd Motion Prediction</h3>
+            <p class="proj-card__desc">
+              Built a behavior-inspired neural network to predict zebra herd trajectories
+              2-5 seconds ahead for groups of 5-10 interacting agents. Preprocessed tens of
+              thousands of aerial tracking points into structured 30-step agent-wise sequences,
+              capturing emergent behaviors like alignment and cohesion.
+            </p>
+            <div class="proj-card__footer">
+              <span class="proj-card__where">Princeton University &middot; 2025</span>
+              <div class="proj-card__tags">
+                <span class="tag">Python</span>
+                <span class="tag">Neural Networks</span>
+                <span class="tag">Multi-Agent</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Apple GAN -->
+        <div class="proj-card">
+          <div class="proj-card__img">
+            <div class="img-placeholder" style="height:190px;">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/>
+              </svg>
+              <span>project photo</span>
+            </div>
+          </div>
+          <div class="proj-card__body">
+            <p class="proj-card__category">ML &middot; Apple AIML</p>
+            <h3 class="proj-card__title">Multi-Agent Motion Modeling &amp; GAN</h3>
+            <p class="proj-card__desc">
+              Developed a graph-based recurrent neural network for coordinated motion prediction,
+              reaching approximately 96% validation accuracy. Also built a GAN to generate
+              realistic synthetic training data, and a Boids simulation as a physics-based
+              testbed for evaluating learned model behavior.
+            </p>
+            <div class="proj-card__footer">
+              <span class="proj-card__where">Apple &middot; Summer 2024</span>
+              <div class="proj-card__tags">
+                <span class="tag">PyTorch</span>
+                <span class="tag">TensorFlow</span>
+                <span class="tag">GANs</span>
+                <span class="tag">Graph RNN</span>
+              </div>
+            </div>
+          </div>
+        </div>
 
         <!-- DBF Aircraft -->
         <div class="proj-card">
           <div class="proj-card__img">
             <div class="img-placeholder" style="height:190px;">
               <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path d="M2 12l9-9 9 9M5 9v10a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1V9"/>
+                <path d="M12 2L2 12l10 10 10-10L12 2z"/><path d="M12 2v20M2 12h20"/>
               </svg>
               <span>project photo</span>
             </div>
           </div>
           <div class="proj-card__body">
-            <p class="proj-card__category">Aerospace</p>
-            <h3 class="proj-card__title">Design Build Fly Aircraft</h3>
+            <p class="proj-card__category">Aerospace &middot; DBF</p>
+            <h3 class="proj-card__title">RC Aircraft Design and Manufacturing</h3>
             <p class="proj-card__desc">
-              Full aircraft design and fabrication for the AIAA Design Build Fly national competition.
-              Responsible for structural analysis, composite manufacturing, and systems integration
-              on a team-built remote-controlled aircraft.
+              Sub-team lead for 5 custom aircraft in Cornell&rsquo;s AIAA Design Build Fly team.
+              Redesigned control surfaces to an Internal Drive System cutting cost 47%, used
+              XFLR5 to select an optimal airfoil, and designed an anhedral-taper wing in
+              SolidWorks that outperformed prior designs by 22% in speed.
             </p>
             <div class="proj-card__footer">
-              <span class="proj-card__where">Cornell DBF</span>
-              <div class="proj-card__tags">
-                <span class="tag">Composites</span>
-                <span class="tag">CAD</span>
-                <span class="tag">Structures</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Princeton Research -->
-        <div class="proj-card">
-          <div class="proj-card__img">
-            <div class="img-placeholder" style="height:190px;">
-              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
-              </svg>
-              <span>project photo</span>
-            </div>
-          </div>
-          <div class="proj-card__body">
-            <p class="proj-card__category">Research</p>
-            <h3 class="proj-card__title">Princeton Structural Mechanics Research</h3>
-            <p class="proj-card__desc">
-              Ongoing undergraduate research at Princeton University exploring structural
-              behavior and manufacturing process interactions. Includes experimental testing,
-              specimen fabrication, and quantitative analysis.
-            </p>
-            <div class="proj-card__footer">
-              <span class="proj-card__where">Princeton University</span>
-              <div class="proj-card__tags">
-                <span class="tag">Research</span>
-                <span class="tag">FEA</span>
-                <span class="tag">Manufacturing</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Senior Design / Capstone placeholder updated with real description -->
-        <div class="proj-card">
-          <div class="proj-card__img">
-            <div class="img-placeholder" style="height:190px;">
-              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 19.07a10 10 0 010-14.14"/>
-              </svg>
-              <span>project photo</span>
-            </div>
-          </div>
-          <div class="proj-card__body">
-            <p class="proj-card__category">Systems Engineering</p>
-            <h3 class="proj-card__title">Mechanical Systems Design Project</h3>
-            <p class="proj-card__desc">
-              End-to-end mechanical systems project involving concept development, detailed design,
-              analysis, and prototyping. Addressed a real engineering constraint from requirements
-              definition through to a working prototype.
-            </p>
-            <div class="proj-card__footer">
-              <span class="proj-card__where">Cornell ME</span>
+              <span class="proj-card__where">Cornell DBF &middot; 2023-Present</span>
               <div class="proj-card__tags">
                 <span class="tag">SolidWorks</span>
-                <span class="tag">Prototyping</span>
-                <span class="tag">FEA</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Thermal / Fluids project -->
-        <div class="proj-card">
-          <div class="proj-card__img">
-            <div class="img-placeholder" style="height:190px;">
-              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path d="M12 2C8 8 4 10 4 15a8 8 0 0016 0c0-5-4-7-8-13z"/>
-              </svg>
-              <span>project photo</span>
-            </div>
-          </div>
-          <div class="proj-card__body">
-            <p class="proj-card__category">Thermal / Fluids</p>
-            <h3 class="proj-card__title">Heat Transfer and Fluid Systems Analysis</h3>
-            <p class="proj-card__desc">
-              Experimental and computational study of a thermal or fluid system. Involved
-              building a test rig, collecting data, and comparing results against analytical
-              and CFD models.
-            </p>
-            <div class="proj-card__footer">
-              <span class="proj-card__where">Cornell ME</span>
-              <div class="proj-card__tags">
-                <span class="tag">MATLAB</span>
-                <span class="tag">CFD</span>
-                <span class="tag">Lab Work</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Controls / Robotics -->
-        <div class="proj-card">
-          <div class="proj-card__img">
-            <div class="img-placeholder" style="height:190px;">
-              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/>
-              </svg>
-              <span>project photo</span>
-            </div>
-          </div>
-          <div class="proj-card__body">
-            <p class="proj-card__category">Controls</p>
-            <h3 class="proj-card__title">Autonomous Control System</h3>
-            <p class="proj-card__desc">
-              Designed and implemented a control system for an electromechanical platform.
-              Work spanned sensor integration, actuator selection, and closed-loop controller
-              design and tuning.
-            </p>
-            <div class="proj-card__footer">
-              <span class="proj-card__where">Cornell ME / ECE</span>
-              <div class="proj-card__tags">
-                <span class="tag">Arduino</span>
-                <span class="tag">Python</span>
-                <span class="tag">Controls</span>
-                <span class="tag">Sensors</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Material Science -->
-        <div class="proj-card">
-          <div class="proj-card__img">
-            <div class="img-placeholder" style="height:190px;">
-              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
-                <path d="M9 3l-6 18M15 3l6 18M4 9h16M3 15h18"/>
-              </svg>
-              <span>project photo</span>
-            </div>
-          </div>
-          <div class="proj-card__body">
-            <p class="proj-card__category">Materials</p>
-            <h3 class="proj-card__title">Materials Characterization Study</h3>
-            <p class="proj-card__desc">
-              Lab-based investigation into material properties and failure behavior.
-              Involved mechanical testing, microstructural analysis, and connecting
-              observed behavior back to underlying material science principles.
-            </p>
-            <div class="proj-card__footer">
-              <span class="proj-card__where">Cornell ME</span>
-              <div class="proj-card__tags">
-                <span class="tag">Materials Testing</span>
-                <span class="tag">Data Analysis</span>
-                <span class="tag">Lab Work</span>
+                <span class="tag">ANSYS</span>
+                <span class="tag">XFLR5</span>
+                <span class="tag">Composites</span>
               </div>
             </div>
           </div>
@@ -213,11 +130,249 @@
 
       </div>
 
-      <!-- SCHOOL YEAR PROJECTS -->
-      <p class="projects-section-label">School Year Projects</p>
+      <!-- AIML COURSEWORK -->
+      <p class="projects-section-label">AIML Coursework Projects</p>
       <div class="projects-grid">
 
-        <!-- Placeholder 1 -->
+        <!-- CNN Fruits -->
+        <div class="proj-card">
+          <div class="proj-card__img">
+            <div class="img-placeholder" style="height:190px;">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+              <span>project photo</span>
+            </div>
+          </div>
+          <div class="proj-card__body">
+            <p class="proj-card__category">Deep Learning</p>
+            <h3 class="proj-card__title">Convolutional Neural Network Image Classifier</h3>
+            <p class="proj-card__desc">
+              Built and trained a CNN from scratch on the Fruits-360 dataset for multi-class
+              image classification. Implemented custom architecture, data augmentation, and
+              training loops in PyTorch. Explored transfer learning variants for comparison.
+            </p>
+            <div class="proj-card__footer">
+              <span class="proj-card__where">AIML Coursework</span>
+              <div class="proj-card__tags">
+                <span class="tag">PyTorch</span>
+                <span class="tag">CNN</span>
+                <span class="tag">Image Classification</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Autoencoder Video -->
+        <div class="proj-card">
+          <div class="proj-card__img">
+            <div class="img-placeholder" style="height:190px;">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M15 10l4.553-2.276A1 1 0 0121 8.723v6.554a1 1 0 01-1.447.894L15 14M3 8a2 2 0 012-2h8a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2V8z"/>
+              </svg>
+              <span>project photo</span>
+            </div>
+          </div>
+          <div class="proj-card__body">
+            <p class="proj-card__category">Deep Learning</p>
+            <h3 class="proj-card__title">Autoencoder for Video Compression</h3>
+            <p class="proj-card__desc">
+              Designed and trained a convolutional autoencoder to compress and reconstruct
+              video data at multiple resolutions. Evaluated reconstruction quality and
+              compression trade-offs across 80x60, 160x120, and 320x240 frame sizes.
+            </p>
+            <div class="proj-card__footer">
+              <span class="proj-card__where">AIML Coursework</span>
+              <div class="proj-card__tags">
+                <span class="tag">PyTorch</span>
+                <span class="tag">Autoencoders</span>
+                <span class="tag">Video</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- RNN Engine Vibrations -->
+        <div class="proj-card">
+          <div class="proj-card__img">
+            <div class="img-placeholder" style="height:190px;">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M3 12h2l2-8 4 16 4-12 2 4h4"/>
+              </svg>
+              <span>project photo</span>
+            </div>
+          </div>
+          <div class="proj-card__body">
+            <p class="proj-card__category">Deep Learning</p>
+            <h3 class="proj-card__title">RNN for Engine Vibration Analysis</h3>
+            <p class="proj-card__desc">
+              Trained a recurrent neural network on engine vibration time-series data to
+              model and predict mechanical behavior patterns. Applied sequence preprocessing,
+              LSTM architecture selection, and evaluation across multiple engine states.
+            </p>
+            <div class="proj-card__footer">
+              <span class="proj-card__where">AIML Coursework</span>
+              <div class="proj-card__tags">
+                <span class="tag">PyTorch</span>
+                <span class="tag">RNN / LSTM</span>
+                <span class="tag">Time Series</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- KNN Movie Recommendations -->
+        <div class="proj-card">
+          <div class="proj-card__img">
+            <div class="img-placeholder" style="height:190px;">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+              </svg>
+              <span>project photo</span>
+            </div>
+          </div>
+          <div class="proj-card__body">
+            <p class="proj-card__category">Machine Learning</p>
+            <h3 class="proj-card__title">KNN Movie Recommendation System</h3>
+            <p class="proj-card__desc">
+              Built a K-Nearest Neighbors recommendation engine on the MovieLens dataset.
+              Implemented collaborative filtering, tuned distance metrics, and evaluated
+              recommendation quality. Also applied KNN to the Pima Indians Diabetes dataset
+              for medical classification.
+            </p>
+            <div class="proj-card__footer">
+              <span class="proj-card__where">AIML Coursework</span>
+              <div class="proj-card__tags">
+                <span class="tag">Python</span>
+                <span class="tag">KNN</span>
+                <span class="tag">Sklearn</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Decision Trees Red Wine -->
+        <div class="proj-card">
+          <div class="proj-card__img">
+            <div class="img-placeholder" style="height:190px;">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M12 2v8M12 2l-4 4M12 2l4 4M12 10c-4 0-7 2-7 6s3 6 7 6 7-2 7-6-3-6-7-6z"/>
+              </svg>
+              <span>project photo</span>
+            </div>
+          </div>
+          <div class="proj-card__body">
+            <p class="proj-card__category">Machine Learning</p>
+            <h3 class="proj-card__title">Decision Tree Red Wine Quality Prediction</h3>
+            <p class="proj-card__desc">
+              Used decision tree classifiers to predict red wine quality scores from
+              physicochemical properties. Explored feature importance, pruning strategies,
+              and ensemble methods (random forest) for performance comparison.
+            </p>
+            <div class="proj-card__footer">
+              <span class="proj-card__where">AIML Coursework</span>
+              <div class="proj-card__tags">
+                <span class="tag">Python</span>
+                <span class="tag">Decision Trees</span>
+                <span class="tag">Sklearn</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Binary Classification Citrus -->
+        <div class="proj-card">
+          <div class="proj-card__img">
+            <div class="img-placeholder" style="height:190px;">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6"/>
+              </svg>
+              <span>project photo</span>
+            </div>
+          </div>
+          <div class="proj-card__body">
+            <p class="proj-card__category">Machine Learning</p>
+            <h3 class="proj-card__title">Binary Classification: Citrus Fruit</h3>
+            <p class="proj-card__desc">
+              Built binary classifiers to distinguish between oranges and grapefruits based on
+              physical measurements. Compared logistic regression, SVM, and tree-based models
+              on precision, recall, and F1 score.
+            </p>
+            <div class="proj-card__footer">
+              <span class="proj-card__where">AIML Coursework</span>
+              <div class="proj-card__tags">
+                <span class="tag">Python</span>
+                <span class="tag">Classification</span>
+                <span class="tag">Sklearn</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- K-Means Mushroom -->
+        <div class="proj-card">
+          <div class="proj-card__img">
+            <div class="img-placeholder" style="height:190px;">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M5 20a7 7 0 0114 0H5z"/><path d="M12 4a5 5 0 015 5H7a5 5 0 015-5z"/>
+              </svg>
+              <span>project photo</span>
+            </div>
+          </div>
+          <div class="proj-card__body">
+            <p class="proj-card__category">Machine Learning</p>
+            <h3 class="proj-card__title">K-Means Mushroom Classification</h3>
+            <p class="proj-card__desc">
+              Applied K-Means clustering to the UCI Mushroom dataset to identify natural
+              groupings and distinguish edible from poisonous species without labeled data.
+              Evaluated cluster quality using silhouette scores and purity metrics.
+            </p>
+            <div class="proj-card__footer">
+              <span class="proj-card__where">AIML Coursework</span>
+              <div class="proj-card__tags">
+                <span class="tag">Python</span>
+                <span class="tag">K-Means</span>
+                <span class="tag">Unsupervised ML</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NLP Embeddings -->
+        <div class="proj-card">
+          <div class="proj-card__img">
+            <div class="img-placeholder" style="height:190px;">
+              <svg width="32" height="32" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+                <path d="M4 6h16M4 12h16M4 18h10"/>
+              </svg>
+              <span>project photo</span>
+            </div>
+          </div>
+          <div class="proj-card__body">
+            <p class="proj-card__category">NLP</p>
+            <h3 class="proj-card__title">Sentiment Analysis on IMDB Reviews</h3>
+            <p class="proj-card__desc">
+              Used text embeddings to classify sentiment across 50,000 IMDB movie reviews.
+              Implemented tokenization, embedding layers, and a classification head.
+              Compared bag-of-words baselines against learned dense embeddings.
+            </p>
+            <div class="proj-card__footer">
+              <span class="proj-card__where">AIML Coursework</span>
+              <div class="proj-card__tags">
+                <span class="tag">PyTorch</span>
+                <span class="tag">NLP</span>
+                <span class="tag">Embeddings</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- SCHOOL YEAR PLACEHOLDERS -->
+      <p class="projects-section-label">School Year Projects &mdash; Coming Soon</p>
+      <div class="projects-grid">
+
         <div class="proj-card proj-placeholder">
           <div class="proj-card__img">
             <div class="img-placeholder" style="height:190px;">
@@ -230,14 +385,10 @@
           <div class="proj-card__body">
             <p class="proj-card__category">Coming Soon</p>
             <h3 class="proj-card__title">School Year Project 1</h3>
-            <p class="proj-card__desc">Details and photos for this project will be added soon.</p>
-            <div class="proj-card__footer">
-              <span class="proj-card__where">Cornell</span>
-            </div>
+            <p class="proj-card__desc">Details and photos coming soon.</p>
           </div>
         </div>
 
-        <!-- Placeholder 2 -->
         <div class="proj-card proj-placeholder">
           <div class="proj-card__img">
             <div class="img-placeholder" style="height:190px;">
@@ -250,14 +401,10 @@
           <div class="proj-card__body">
             <p class="proj-card__category">Coming Soon</p>
             <h3 class="proj-card__title">School Year Project 2</h3>
-            <p class="proj-card__desc">Details and photos for this project will be added soon.</p>
-            <div class="proj-card__footer">
-              <span class="proj-card__where">Cornell</span>
-            </div>
+            <p class="proj-card__desc">Details and photos coming soon.</p>
           </div>
         </div>
 
-        <!-- Placeholder 3 -->
         <div class="proj-card proj-placeholder">
           <div class="proj-card__img">
             <div class="img-placeholder" style="height:190px;">
@@ -270,14 +417,10 @@
           <div class="proj-card__body">
             <p class="proj-card__category">Coming Soon</p>
             <h3 class="proj-card__title">School Year Project 3</h3>
-            <p class="proj-card__desc">Details and photos for this project will be added soon.</p>
-            <div class="proj-card__footer">
-              <span class="proj-card__where">Cornell</span>
-            </div>
+            <p class="proj-card__desc">Details and photos coming soon.</p>
           </div>
         </div>
 
-        <!-- Placeholder 4 -->
         <div class="proj-card proj-placeholder">
           <div class="proj-card__img">
             <div class="img-placeholder" style="height:190px;">
@@ -290,10 +433,7 @@
           <div class="proj-card__body">
             <p class="proj-card__category">Coming Soon</p>
             <h3 class="proj-card__title">School Year Project 4</h3>
-            <p class="proj-card__desc">Details and photos for this project will be added soon.</p>
-            <div class="proj-card__footer">
-              <span class="proj-card__where">Cornell</span>
-            </div>
+            <p class="proj-card__desc">Details and photos coming soon.</p>
           </div>
         </div>
 
@@ -305,7 +445,7 @@
   <!-- FOOTER -->
   <footer class="footer">
     <div class="wrap">
-      &copy; 2026 Davis Henry Adams &middot; Built from scratch
+      &copy; 2026 Davis Adams &middot; Built from scratch
     </div>
   </footer>
 
