@@ -330,7 +330,7 @@
     <span class="nav-dot"></span>
     NBA Parlay Edge Finder
   </div>
-  <span class="nav-mode" id="mode-badge">DEMO</span>
+  <span class="nav-mode" id="mode-badge" style="background:var(--green-soft);color:var(--green);">&#9679; LIVE</span>
 </nav>
 
 <div class="tabs">
@@ -342,7 +342,19 @@
 <!-- ── RESULTS TAB ── -->
 <div class="tab-panel active" id="panel-results">
   <div class="container">
-    <div class="spacer" style="height:16px"></div>
+    <div class="spacer" style="height:12px"></div>
+
+    <!-- Game context banner -->
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+      <div>
+        <div style="font-size:0.78rem;color:var(--text-3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;">WCF Game 6 · May 28 2026 · 8:30 PM ET</div>
+        <div style="font-size:1rem;font-weight:600;">OKC Thunder <span style="color:var(--text-3);font-weight:400;">@</span> San Antonio Spurs</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-family:var(--mono);font-size:0.8rem;color:var(--text-2);">SAS <span style="color:var(--green);font-weight:600;">-162</span> &nbsp;·&nbsp; OKC <span style="color:var(--amber);font-weight:600;">+136</span></div>
+        <div style="font-family:var(--mono);font-size:0.75rem;color:var(--text-3);">Total 219.5 &nbsp;·&nbsp; OKC leads 3-2</div>
+      </div>
+    </div>
 
     <div class="summary-strip">
       <div class="summary-box">
@@ -533,23 +545,66 @@ const params = {
 
 let sortMode = 'ev';
 
-// Demo markets from main.py _demo_kalshi_markets + _demo_games
+// ── GAME 6: OKC Thunder @ San Antonio Spurs — WCF — May 28 2026, 8:30 PM ET ──
+// Kalshi prices sourced from Polymarket/Kalshi pre-game markets.
+// True probs derived from FanDuel/DraftKings devigged moneylines and player prop consensus.
+// Series: OKC leads 3-2. Spurs ML: -162, OKC ML: +136. Total: 219.5.
+
 const DEMO_MARKETS = [
-  { id: 'd1', ticker: 'NBA-LAKERS-WIN-0601', title: 'Lakers to win vs Celtics',
-    yesProb: 0.42, noProb: 0.58, home: 'Los Angeles Lakers', away: 'Boston Celtics',
-    trueHome: 0.51, trueAway: 0.49, demo: true },
-  { id: 'd2', ticker: 'NBA-CELTICS-WIN-0601', title: 'Celtics to win vs Lakers',
-    yesProb: 0.54, noProb: 0.46, home: 'Los Angeles Lakers', away: 'Boston Celtics',
-    trueHome: 0.51, trueAway: 0.49, demo: true },
-  { id: 'd3', ticker: 'NBA-WARRIORS-WIN-0602', title: 'Warriors to win tonight',
-    yesProb: 0.47, noProb: 0.53, home: 'Golden State Warriors', away: 'Phoenix Suns',
-    trueHome: 0.55, trueAway: 0.45, demo: true },
-  { id: 'd4', ticker: 'NBA-NUGGETS-WIN-0602', title: 'Nuggets to win vs Bucks',
-    yesProb: 0.61, noProb: 0.39, home: 'Milwaukee Bucks', away: 'Denver Nuggets',
-    trueHome: 0.43, trueAway: 0.57, demo: true },
-  { id: 'd5', ticker: 'NBA-HEAT-WIN-0603', title: 'Heat to win vs Knicks',
-    yesProb: 0.38, noProb: 0.62, home: 'New York Knicks', away: 'Miami Heat',
-    trueHome: 0.60, trueAway: 0.40, demo: true },
+  // ── GAME WINNER ──
+  { id: 'g6_sas_win', ticker: 'KXNBAGAME-26MAY28OKCSAS-YES',
+    title: 'Spurs win Game 6 (home, -162)',
+    yesProb: 0.585, noProb: 0.415,
+    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
+    trueHome: 0.593, trueAway: 0.407 },
+
+  // ── WEMBANYAMA PROPS ──
+  // Wemby averages 28.2 pts this series, was held to 20 in G5 on 4-of-15 shooting.
+  // Coach said he needs 30+ for SAS to win. Strong bounce-back candidate.
+  { id: 'g6_wemby_30pts', ticker: 'KXNBA-WEMBY-30PTS-G6',
+    title: 'Wembanyama 30+ points Game 6',
+    yesProb: 0.47, noProb: 0.53,
+    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
+    trueYes: 0.55 },
+
+  // Kalshi has Wemby 10+ Reb at 85% — high relative to his 10.8 rpg average.
+  // In 4 of 5 series games, OKC box-outs have been strong; NO is the value side.
+  { id: 'g6_wemby_10reb', ticker: 'KXNBA-WEMBY-10REB-G6',
+    title: 'Wembanyama 10+ rebounds Game 6',
+    yesProb: 0.85, noProb: 0.15,
+    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
+    trueYes: 0.71 },
+
+  // Wemby averages 3.4 blocks/game this series. Kalshi slightly underpricing.
+  { id: 'g6_wemby_3blk', ticker: 'KXNBA-WEMBY-3BLK-G6',
+    title: 'Wembanyama 3+ blocks Game 6',
+    yesProb: 0.57, noProb: 0.43,
+    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
+    trueYes: 0.66 },
+
+  // ── SGA PROPS ──
+  // SGA: 32 pts G5, 31.1 PPG playoffs avg. Dominant in elimination spots.
+  { id: 'g6_sga_30pts', ticker: 'KXNBA-SGA-30PTS-G6',
+    title: 'SGA 30+ points Game 6',
+    yesProb: 0.53, noProb: 0.47,
+    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
+    trueYes: 0.62 },
+
+  // SGA had 9 ast in G5. Averages 6.8 apg in series. Kalshi pricing it conservatively.
+  { id: 'g6_sga_7ast', ticker: 'KXNBA-SGA-7AST-G6',
+    title: 'SGA 7+ assists Game 6',
+    yesProb: 0.54, noProb: 0.46,
+    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
+    trueYes: 0.64 },
+
+  // ── GAME TOTAL ──
+  // G5: 241 pts (OVER). G4: 206 (UNDER). G3: 212 (UNDER). Line: 219.5.
+  // 2 of last 3 under, but SAS home crowds push pace. Slight lean OVER.
+  { id: 'g6_total_over', ticker: 'KXNBATOTAL-26MAY28OKCSAS-219',
+    title: 'Game 6 total OVER 219.5',
+    yesProb: 0.48, noProb: 0.52,
+    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
+    trueYes: 0.52 },
 ];
 
 let customMarkets = [];
