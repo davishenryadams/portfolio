@@ -3,976 +3,510 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-  <title>NBA Parlay Edge Finder</title>
+  <title>Parlay Edge Finder</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --bg: #0e0e10;
-      --surface: #17171b;
-      --surface-2: #1f1f25;
-      --border: #2e2e36;
-      --accent: #c0392b;
-      --accent-soft: rgba(192,57,43,0.13);
-      --green: #27ae60;
-      --green-soft: rgba(39,174,96,0.13);
-      --amber: #e67e22;
-      --amber-soft: rgba(230,126,34,0.13);
-      --text: #f0ede9;
-      --text-2: #928f8b;
-      --text-3: #575552;
-      --mono: 'JetBrains Mono', monospace;
-      --sans: 'DM Sans', system-ui, sans-serif;
-      --r: 12px;
-      --r-lg: 18px;
-      --ease: 0.2s ease;
+      --bg:#0e0e10;--surface:#17171b;--surface-2:#1f1f25;--surface-3:#27272f;
+      --border:#2e2e36;--border-2:#3a3a44;
+      --accent:#c0392b;--accent-soft:rgba(192,57,43,0.13);
+      --green:#27ae60;--green-soft:rgba(39,174,96,0.13);
+      --amber:#e67e22;--amber-soft:rgba(230,126,34,0.13);
+      --blue:#2980b9;--blue-soft:rgba(41,128,185,0.13);
+      --purple:#8e44ad;--purple-soft:rgba(142,68,173,0.13);
+      --text:#f0ede9;--text-2:#928f8b;--text-3:#575552;
+      --mono:'JetBrains Mono',monospace;--sans:'DM Sans',system-ui,sans-serif;
+      --r:10px;--r-lg:16px;--ease:0.18s ease;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { font-size: 16px; }
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: var(--sans);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
-    }
-
-    /* ── NAV ── */
-    .nav {
-      position: sticky; top: 0; z-index: 50;
-      background: rgba(14,14,16,0.94);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-      padding: 0 16px;
-      height: 56px;
-      display: flex; align-items: center; justify-content: space-between;
-    }
-    .nav-title {
-      font-size: 0.95rem; font-weight: 600;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .nav-dot {
-      width: 8px; height: 8px; border-radius: 50%;
-      background: var(--accent);
-      animation: pulse 2s infinite;
-    }
-    .nav-mode {
-      font-family: var(--mono); font-size: 0.68rem;
-      background: var(--accent-soft); color: var(--accent);
-      padding: 3px 10px; border-radius: 20px;
-    }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-    /* ── TABS ── */
-    .tabs {
-      display: flex; gap: 2px;
-      background: var(--surface);
-      border-bottom: 1px solid var(--border);
-      padding: 6px 12px 0;
-      position: sticky; top: 56px; z-index: 40;
-    }
-    .tab {
-      padding: 8px 16px; font-size: 0.82rem; font-weight: 500;
-      color: var(--text-2); border-radius: var(--r) var(--r) 0 0;
-      cursor: pointer; border: none; background: none;
-      border-bottom: 2px solid transparent;
-      transition: all var(--ease);
-      font-family: var(--sans);
-    }
-    .tab.active { color: var(--accent); border-bottom-color: var(--accent); }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
-
-    /* ── LAYOUT ── */
-    .container { padding: 16px; max-width: 680px; margin: 0 auto; }
-    .section-label {
-      font-family: var(--mono); font-size: 0.68rem;
-      color: var(--text-3); text-transform: uppercase;
-      letter-spacing: 0.1em; margin-bottom: 10px;
-    }
-    .spacer { height: 24px; }
-
-    /* ── PARAM CARD ── */
-    .param-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
-      padding: 16px 18px;
-      margin-bottom: 10px;
-    }
-    .param-row {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 10px;
-    }
-    .param-label { font-size: 0.88rem; color: var(--text); font-weight: 500; }
-    .param-sub { font-size: 0.75rem; color: var(--text-2); margin-top: 2px; }
-    .param-val {
-      font-family: var(--mono); font-size: 0.88rem;
-      color: var(--accent); font-weight: 500; min-width: 42px; text-align: right;
-    }
-    input[type=range] {
-      width: 100%; height: 4px; accent-color: var(--accent);
-      background: var(--border); border-radius: 2px;
-      -webkit-appearance: none; appearance: none; cursor: pointer;
-    }
-    input[type=range]::-webkit-slider-thumb {
-      -webkit-appearance: none; width: 18px; height: 18px;
-      background: var(--accent); border-radius: 50%; cursor: pointer;
-    }
-    input[type=range]::-moz-range-thumb {
-      width: 18px; height: 18px; background: var(--accent);
-      border-radius: 50%; cursor: pointer; border: none;
-    }
-
-    /* ── MARKET INPUT ── */
-    .market-form {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
-      padding: 16px 18px;
-      margin-bottom: 10px;
-    }
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    .form-group { display: flex; flex-direction: column; gap: 5px; }
-    .form-group label { font-size: 0.75rem; color: var(--text-2); font-weight: 500; }
-    .form-group input, .form-group select {
-      background: var(--surface-2); border: 1px solid var(--border);
-      border-radius: var(--r); color: var(--text); font-family: var(--sans);
-      font-size: 0.88rem; padding: 9px 12px; width: 100%;
-      transition: border-color var(--ease);
-    }
-    .form-group input:focus, .form-group select:focus {
-      outline: none; border-color: var(--accent);
-    }
-    .form-group select option { background: var(--surface-2); }
-    .form-group.full { grid-column: 1 / -1; }
-    .btn-add {
-      width: 100%; padding: 11px; border-radius: var(--r);
-      background: var(--accent); color: #fff; border: none;
-      font-family: var(--sans); font-size: 0.88rem; font-weight: 600;
-      cursor: pointer; transition: background var(--ease);
-    }
-    .btn-add:active { background: #a93226; }
-
-    /* ── MARKET LIST ── */
-    .market-item {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
-      padding: 14px 16px;
-      margin-bottom: 8px;
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 10px;
-    }
-    .market-item.demo { border-left: 2px solid var(--text-3); }
-    .market-item.custom { border-left: 2px solid var(--accent); }
-    .market-name { font-size: 0.9rem; font-weight: 500; color: var(--text); }
-    .market-sub { font-size: 0.75rem; color: var(--text-2); margin-top: 2px; }
-    .market-prices {
-      display: flex; gap: 6px; flex-shrink: 0;
-    }
-    .price-chip {
-      font-family: var(--mono); font-size: 0.75rem;
-      padding: 3px 8px; border-radius: 6px;
-      background: var(--surface-2); color: var(--text-2);
-    }
-    .price-chip span { color: var(--text); font-weight: 500; }
-    .btn-remove {
-      background: none; border: none; color: var(--text-3);
-      cursor: pointer; font-size: 1.1rem; padding: 2px 4px;
-      transition: color var(--ease);
-    }
-    .btn-remove:hover { color: var(--accent); }
-
-    /* ── BET SIGNAL CARD ── */
-    .signal-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
-      padding: 16px 18px;
-      margin-bottom: 10px;
-      transition: border-color var(--ease);
-    }
-    .signal-card:hover { border-color: var(--accent); }
-    .signal-header {
-      display: flex; align-items: flex-start; justify-content: space-between;
-      margin-bottom: 12px; gap: 10px;
-    }
-    .signal-market { font-size: 0.95rem; font-weight: 600; color: var(--text); }
-    .signal-matchup { font-size: 0.78rem; color: var(--text-2); margin-top: 3px; }
-    .signal-ev {
-      font-size: 1.4rem; font-weight: 600; color: var(--green);
-      text-align: right; flex-shrink: 0; line-height: 1;
-    }
-    .signal-ev-label { font-size: 0.68rem; color: var(--text-2); text-align: right; margin-top: 2px; }
-    .signal-stats {
-      display: grid; grid-template-columns: repeat(4, 1fr);
-      gap: 8px; margin-bottom: 12px;
-    }
-    .stat-box {
-      background: var(--surface-2); border-radius: 8px;
-      padding: 8px 10px; text-align: center;
-    }
-    .stat-box-val { font-family: var(--mono); font-size: 0.85rem; color: var(--text); font-weight: 500; }
-    .stat-box-key { font-size: 0.65rem; color: var(--text-2); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.05em; }
-    .edge-bar-track { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
-    .edge-bar-fill { height: 100%; border-radius: 2px; }
-    .conf-badge {
-      display: inline-flex; align-items: center; gap: 5px;
-      font-size: 0.72rem; font-weight: 600;
-      padding: 3px 10px; border-radius: 20px;
-    }
-    .conf-HIGH { background: var(--green-soft); color: var(--green); }
-    .conf-MED  { background: var(--amber-soft); color: var(--amber); }
-    .conf-LOW  { background: var(--surface-2); color: var(--text-2); }
-    .side-badge {
-      font-family: var(--mono); font-size: 0.72rem; font-weight: 600;
-      padding: 3px 10px; border-radius: 20px;
-      background: var(--accent-soft); color: var(--accent);
-    }
-
-    /* ── PARLAY CARD ── */
-    .parlay-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: var(--r-lg);
-      padding: 16px 18px;
-      margin-bottom: 10px;
-    }
-    .parlay-card.top { border-color: var(--green); }
-    .parlay-header {
-      display: flex; align-items: center; justify-content: space-between;
-      margin-bottom: 12px; flex-wrap: wrap; gap: 8px;
-    }
-    .parlay-num { font-size: 0.78rem; color: var(--text-2); font-family: var(--mono); }
-    .parlay-ev { font-size: 1.5rem; font-weight: 600; color: var(--green); }
-    .parlay-meta {
-      display: flex; gap: 6px; flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-    .meta-chip {
-      font-family: var(--mono); font-size: 0.72rem;
-      padding: 3px 10px; border-radius: 20px;
-      background: var(--surface-2); color: var(--text-2);
-    }
-    .meta-chip b { color: var(--text); }
-    .parlay-legs { border-top: 1px solid var(--border); padding-top: 10px; }
-    .parlay-leg {
-      display: flex; align-items: center; gap: 8px;
-      padding: 7px 0;
-      font-size: 0.83rem; color: var(--text-2);
-      border-bottom: 1px solid var(--border);
-    }
-    .parlay-leg:last-child { border-bottom: none; padding-bottom: 0; }
-    .leg-arrow { color: var(--accent); font-size: 0.8rem; flex-shrink: 0; }
-    .leg-market { flex: 1; color: var(--text); font-weight: 500; }
-    .leg-price { font-family: var(--mono); font-size: 0.78rem; color: var(--text-2); }
-
-    /* ── EMPTY STATE ── */
-    .empty {
-      text-align: center; padding: 40px 20px;
-      color: var(--text-3); font-size: 0.88rem;
-    }
-
-    /* ── RUN BUTTON ── */
-    .run-btn {
-      width: 100%; padding: 14px; border-radius: var(--r-lg);
-      background: var(--accent); color: #fff; border: none;
-      font-family: var(--sans); font-size: 0.95rem; font-weight: 600;
-      cursor: pointer; transition: background var(--ease), transform var(--ease);
-      margin-bottom: 16px; letter-spacing: 0.01em;
-    }
-    .run-btn:active { background: #a93226; transform: scale(0.99); }
-
-    /* ── SUMMARY STRIP ── */
-    .summary-strip {
-      display: grid; grid-template-columns: repeat(3, 1fr);
-      gap: 8px; margin-bottom: 16px;
-    }
-    .summary-box {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r); padding: 12px; text-align: center;
-    }
-    .summary-num { font-size: 1.4rem; font-weight: 600; color: var(--accent); }
-    .summary-label { font-size: 0.7rem; color: var(--text-2); margin-top: 2px; }
-
-    /* ── SORT BAR ── */
-    .sort-bar {
-      display: flex; gap: 6px; margin-bottom: 12px; flex-wrap: wrap;
-    }
-    .sort-btn {
-      font-size: 0.75rem; padding: 5px 12px; border-radius: 20px;
-      border: 1px solid var(--border); background: var(--surface);
-      color: var(--text-2); cursor: pointer; font-family: var(--sans);
-      transition: all var(--ease);
-    }
-    .sort-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
-
-    /* ── NO RESULTS BANNER ── */
-    .info-banner {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: var(--r-lg); padding: 14px 16px;
-      font-size: 0.82rem; color: var(--text-2); margin-bottom: 12px;
-      display: flex; align-items: center; gap: 8px;
-    }
-    .info-banner .dot { color: var(--accent); font-size: 1.1rem; }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--bg);color:var(--text);font-family:var(--sans);min-height:100vh;-webkit-font-smoothing:antialiased}
+    .nav{position:sticky;top:0;z-index:60;background:rgba(14,14,16,0.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:0 16px;height:52px;display:flex;align-items:center;justify-content:space-between}
+    .nav-left{display:flex;align-items:center;gap:10px}
+    .nav-dot{width:8px;height:8px;border-radius:50%;background:var(--accent)}
+    .nav-dot.live{background:var(--green);animation:pulse 2s infinite}
+    .nav-title{font-size:.9rem;font-weight:600}
+    .nav-badge{font-family:var(--mono);font-size:.65rem;padding:3px 9px;border-radius:20px;background:var(--surface-2);color:var(--text-2)}
+    .nav-badge.live{background:var(--green-soft);color:var(--green)}
+    .nav-badge.offline{background:var(--accent-soft);color:var(--accent)}
+    .nav-right{display:flex;align-items:center;gap:8px}
+    .btn-sm{background:var(--surface-2);border:1px solid var(--border);color:var(--text-2);font-size:.75rem;padding:5px 12px;border-radius:8px;cursor:pointer;font-family:var(--sans);transition:all var(--ease)}
+    .btn-sm:hover{color:var(--text);border-color:var(--border-2)}
+    @keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    #backend-banner{background:var(--accent-soft);border-bottom:1px solid rgba(192,57,43,.25);padding:10px 16px;font-size:.82rem;color:#e8a09a;display:none;align-items:center;gap:10px;flex-wrap:wrap}
+    #backend-banner.show{display:flex}
+    #backend-banner code{font-family:var(--mono);font-size:.76rem;background:rgba(255,255,255,.06);padding:2px 8px;border-radius:5px;color:#f0ede9}
+    .tabs{background:var(--surface);border-bottom:1px solid var(--border);padding:0 12px;position:sticky;top:52px;z-index:50;display:flex;gap:0;overflow-x:auto;scrollbar-width:none}
+    .tabs::-webkit-scrollbar{display:none}
+    .tab{padding:12px 16px;font-size:.82rem;font-weight:500;color:var(--text-3);cursor:pointer;border:none;background:none;border-bottom:2px solid transparent;white-space:nowrap;transition:all var(--ease);font-family:var(--sans);flex-shrink:0}
+    .tab:hover{color:var(--text-2)}
+    .tab.active{color:var(--text);border-bottom-color:var(--accent)}
+    .tab-cnt{display:inline-block;margin-left:5px;font-family:var(--mono);font-size:.6rem;background:var(--surface-3);color:var(--text-3);padding:1px 5px;border-radius:8px;vertical-align:middle}
+    .tab.active .tab-cnt{background:var(--accent-soft);color:var(--accent)}
+    .cat-pills{padding:10px 16px;display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+    .cat-pills::-webkit-scrollbar{display:none}
+    .pill{padding:5px 12px;font-size:.75rem;font-weight:500;border-radius:20px;border:1px solid var(--border);background:none;color:var(--text-2);cursor:pointer;white-space:nowrap;font-family:var(--sans);transition:all var(--ease);flex-shrink:0}
+    .pill:hover{border-color:var(--border-2);color:var(--text)}
+    .pill.active{background:var(--accent-soft);border-color:var(--accent);color:var(--accent)}
+    .panel{display:none}
+    .panel.active{display:block}
+    .wrap{padding:14px 16px;max-width:720px;margin:0 auto}
+    .stats-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+    .stat-box{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;text-align:center}
+    .stat-num{font-family:var(--mono);font-size:1.1rem;font-weight:500;color:var(--accent)}
+    .stat-lbl{font-size:.68rem;color:var(--text-3);margin-top:2px}
+    .controls{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;align-items:center}
+    .sort-btn{padding:5px 12px;font-size:.75rem;font-weight:500;border-radius:8px;border:1px solid var(--border);background:none;color:var(--text-2);cursor:pointer;font-family:var(--sans);transition:all var(--ease)}
+    .sort-btn.active{background:var(--surface-2);border-color:var(--border-2);color:var(--text)}
+    .filter-sel{padding:5px 10px;font-size:.75rem;border-radius:8px;border:1px solid var(--border);background:var(--surface-2);color:var(--text-2);font-family:var(--sans);cursor:pointer;outline:none;margin-left:auto}
+    .sec{font-family:var(--mono);font-size:.62rem;color:var(--text-3);text-transform:uppercase;letter-spacing:.1em;margin:12px 0 8px}
+    /* Signal card */
+    .sc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:10px;overflow:hidden;transition:border-color var(--ease)}
+    .sc:hover{border-color:var(--border-2)}
+    .sc.yes{border-left:3px solid var(--green)}
+    .sc.no{border-left:3px solid var(--amber)}
+    .sc-head{padding:12px 14px;cursor:pointer;display:flex;flex-direction:column;gap:6px}
+    .sc-r1{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+    .sc-title{font-size:.88rem;font-weight:500;line-height:1.4;flex:1}
+    .cat-tag{font-family:var(--mono);font-size:.6rem;padding:2px 7px;border-radius:6px;white-space:nowrap;background:var(--surface-3);color:var(--text-3);flex-shrink:0}
+    .cat-tag.sports{background:var(--blue-soft);color:var(--blue)}
+    .cat-tag.politics{background:var(--purple-soft);color:var(--purple)}
+    .cat-tag.finance{background:var(--amber-soft);color:var(--amber)}
+    .sc-r2{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+    .side-b{font-family:var(--mono);font-size:.68rem;font-weight:600;padding:3px 10px;border-radius:6px;letter-spacing:.04em}
+    .side-b.YES{background:var(--green-soft);color:var(--green)}
+    .side-b.NO{background:var(--amber-soft);color:var(--amber)}
+    .ev-b{font-family:var(--mono);font-size:.72rem;font-weight:600;padding:3px 10px;border-radius:6px;background:var(--surface-3);color:var(--text)}
+    .ev-b.pos{background:rgba(39,174,96,.2);color:var(--green)}
+    .conf-b{font-family:var(--mono);font-size:.62rem;padding:2px 8px;border-radius:5px}
+    .conf-b.HIGH{background:rgba(39,174,96,.18);color:var(--green)}
+    .conf-b.MED{background:rgba(230,126,34,.18);color:var(--amber)}
+    .conf-b.LOW{background:var(--surface-3);color:var(--text-3)}
+    .rig-b{font-family:var(--mono);font-size:.62rem;padding:2px 8px;border-radius:5px;margin-left:auto}
+    .rig-b.green{background:var(--green-soft);color:var(--green)}
+    .rig-b.amber{background:var(--amber-soft);color:var(--amber)}
+    .rig-b.red{background:var(--accent-soft);color:var(--accent)}
+    .ebar{display:flex;align-items:center;gap:8px}
+    .ebar-bg{flex:1;height:4px;background:var(--surface-3);border-radius:2px}
+    .ebar-fill{height:100%;border-radius:2px;background:var(--green);transition:width .4s}
+    .ebar-fill.no{background:var(--amber)}
+    .ebar-lbl{font-family:var(--mono);font-size:.65rem;color:var(--text-3);white-space:nowrap}
+    /* Expanded body */
+    .sc-body{display:none;padding:0 14px 14px;border-top:1px solid var(--border)}
+    .sc.open .sc-body{display:block}
+    .prices{display:flex;gap:8px;margin-top:12px}
+    .pb{flex:1;border-radius:8px;padding:10px 12px;border:1px solid var(--border);text-align:center}
+    .pb.YES{border-color:rgba(39,174,96,.3);background:rgba(39,174,96,.05)}
+    .pb.NO{border-color:rgba(230,126,34,.3);background:rgba(230,126,34,.05)}
+    .pb.best{border-width:2px}
+    .pb-side{font-size:.7rem;font-weight:600;letter-spacing:.08em;margin-bottom:4px}
+    .pb.YES .pb-side{color:var(--green)}
+    .pb.NO .pb-side{color:var(--amber)}
+    .pb-val{font-family:var(--mono);font-size:1.1rem;font-weight:600}
+    .pb-ev{font-size:.7rem;color:var(--text-2);margin-top:2px}
+    .pb-cta{margin-top:8px;padding:5px 0;width:100%;font-size:.72rem;font-weight:600;border-radius:6px;border:none;cursor:pointer;font-family:var(--sans);transition:opacity var(--ease)}
+    .pb.YES .pb-cta{background:var(--green-soft);color:var(--green)}
+    .pb.NO .pb-cta{background:var(--amber-soft);color:var(--amber)}
+    .pb-cta:hover{opacity:.7}
+    .rig-detail{margin-top:12px;padding:10px 12px;background:var(--surface-2);border-radius:8px;font-size:.78rem;color:var(--text-2)}
+    .rig-title{font-weight:600;color:var(--text);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+    .rig-row{display:flex;justify-content:space-between;margin-bottom:3px;font-size:.75rem}
+    /* Sentiment */
+    .sent{margin-top:10px;border-radius:8px;overflow:hidden}
+    .sent-hd{background:var(--surface-3);padding:8px 12px;font-size:.75rem;font-weight:600;color:var(--text-2);display:flex;justify-content:space-between;align-items:center}
+    .sent-bd{padding:10px 12px;background:var(--surface-2)}
+    .sent-comp{font-family:var(--mono);font-size:1rem;font-weight:600;margin-bottom:6px}
+    .sent-row{display:flex;justify-content:space-between;font-size:.72rem;padding:4px 0;border-bottom:1px solid var(--border)}
+    .sent-row:last-child{border:none}
+    .sent-hl{margin-top:8px;font-size:.71rem;color:var(--text-2);line-height:1.6}
+    .load-btn{width:100%;margin-top:10px;padding:7px;font-size:.75rem;font-weight:500;background:var(--surface-3);color:var(--text-2);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-family:var(--sans);transition:all var(--ease)}
+    .load-btn:hover{color:var(--text);border-color:var(--border-2)}
+    /* Parlay */
+    .pc{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);margin-bottom:10px;padding:14px}
+    .pc-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+    .pc-title{font-size:.82rem;font-weight:600}
+    .pc-ev{font-family:var(--mono);font-size:.88rem;font-weight:600;color:var(--green)}
+    .leg{display:flex;align-items:center;gap:8px;padding:6px 0;border-top:1px solid var(--border);font-size:.78rem}
+    .leg-s{font-family:var(--mono);font-size:.65rem;font-weight:600;padding:2px 7px;border-radius:5px;flex-shrink:0}
+    .leg-s.YES{background:var(--green-soft);color:var(--green)}
+    .leg-s.NO{background:var(--amber-soft);color:var(--amber)}
+    .leg-t{flex:1;color:var(--text-2);line-height:1.3}
+    .leg-p{font-family:var(--mono);font-size:.72rem;color:var(--text-3)}
+    /* Params */
+    .param-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--r-lg);padding:16px 18px;margin-bottom:10px}
+    .pr{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+    .pl{font-size:.82rem;font-weight:500}
+    .pv{font-family:var(--mono);font-size:.8rem;color:var(--accent);min-width:50px;text-align:right}
+    .slider{width:100%;accent-color:var(--accent);margin-bottom:12px}
+    .pd{font-size:.72rem;color:var(--text-3);margin-bottom:14px}
+    /* All markets row */
+    .mkt-row{background:var(--surface);border:1px solid var(--border);border-radius:var(--r);margin-bottom:8px;padding:12px 14px}
+    .mkt-row:hover{border-color:var(--border-2)}
+    /* Empty / loading */
+    .empty{text-align:center;padding:48px 24px;color:var(--text-3);font-size:.85rem}
+    .empty strong{display:block;font-size:1rem;color:var(--text-2);margin-bottom:6px}
+    .spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite;display:inline-block;vertical-align:middle;margin-right:8px}
+    @media(max-width:480px){.stats-strip{grid-template-columns:repeat(2,1fr)}}
   </style>
 </head>
 <body>
 
 <nav class="nav">
-  <div class="nav-title">
-    <span class="nav-dot"></span>
-    NBA Parlay Edge Finder
+  <div class="nav-left">
+    <div class="nav-dot" id="ndot"></div>
+    <span class="nav-title">Parlay Edge</span>
+    <span class="nav-badge" id="nbadge">Connecting…</span>
   </div>
-  <span class="nav-mode" id="mode-badge" style="background:var(--green-soft);color:var(--green);">&#9679; LIVE</span>
+  <div class="nav-right">
+    <span style="font-family:var(--mono);font-size:.65rem;color:var(--text-3)" id="ts"></span>
+    <button class="btn-sm" onclick="fullRefresh()">↻ Refresh</button>
+  </div>
 </nav>
 
+<div id="backend-banner">
+  ⚠ Backend offline. Run: <code>cd ~/Documents/nba-parlay && ./start.sh</code> then refresh.
+</div>
+
 <div class="tabs">
-  <button class="tab active" onclick="switchTab('results')">Results</button>
-  <button class="tab" onclick="switchTab('markets')">Markets</button>
-  <button class="tab" onclick="switchTab('params')">Params</button>
+  <button class="tab active" onclick="sw('results')"  id="t-results">Results<span class="tab-cnt" id="c-results">0</span></button>
+  <button class="tab"        onclick="sw('parlays')"  id="t-parlays">Parlays<span class="tab-cnt" id="c-parlays">0</span></button>
+  <button class="tab"        onclick="sw('markets')"  id="t-markets">All Markets<span class="tab-cnt" id="c-markets">0</span></button>
+  <button class="tab"        onclick="sw('params')"   id="t-params">Params</button>
 </div>
 
-<!-- ── RESULTS TAB ── -->
-<div class="tab-panel active" id="panel-results">
-  <div class="container">
-    <div class="spacer" style="height:12px"></div>
-
-    <!-- Game context banner -->
-    <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:12px 14px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
-      <div>
-        <div style="font-size:0.78rem;color:var(--text-3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:2px;">WCF Game 6 · May 28 2026 · 8:30 PM ET</div>
-        <div style="font-size:1rem;font-weight:600;">OKC Thunder <span style="color:var(--text-3);font-weight:400;">@</span> San Antonio Spurs</div>
-      </div>
-      <div style="text-align:right;">
-        <div style="font-family:var(--mono);font-size:0.8rem;color:var(--text-2);">SAS <span style="color:var(--green);font-weight:600;">-162</span> &nbsp;·&nbsp; OKC <span style="color:var(--amber);font-weight:600;">+136</span></div>
-        <div style="font-family:var(--mono);font-size:0.75rem;color:var(--text-3);">Total 219.5 &nbsp;·&nbsp; OKC leads 3-2</div>
-      </div>
+<!-- RESULTS -->
+<div class="panel active" id="p-results">
+  <div class="wrap">
+    <div class="cat-pills" id="cat-pills"></div>
+    <div class="stats-strip">
+      <div class="stat-box"><div class="stat-num" id="s-edges">—</div><div class="stat-lbl">Edges found</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-bestev">—</div><div class="stat-lbl">Best EV/$100</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-mkts">—</div><div class="stat-lbl">Live markets</div></div>
+      <div class="stat-box"><div class="stat-num" id="s-rig">—</div><div class="stat-lbl">Avg rigging</div></div>
     </div>
-
-    <div class="summary-strip">
-      <div class="summary-box">
-        <div class="summary-num" id="stat-edges">0</div>
-        <div class="summary-label">Edges found</div>
-      </div>
-      <div class="summary-box">
-        <div class="summary-num" id="stat-best-ev">—</div>
-        <div class="summary-label">Best EV/$100</div>
-      </div>
-      <div class="summary-box">
-        <div class="summary-num" id="stat-parlays">0</div>
-        <div class="summary-label">Parlays</div>
-      </div>
+    <div class="controls">
+      <button class="sort-btn active" id="sb-ev"   onclick="setSort('ev')">EV</button>
+      <button class="sort-btn"        id="sb-edge" onclick="setSort('edge')">Edge%</button>
+      <button class="sort-btn"        id="sb-rig"  onclick="setSort('rig')">Rigging</button>
+      <select class="filter-sel" onchange="setMinEv(this.value)">
+        <option value="0">All EV</option>
+        <option value="1">≥$1</option>
+        <option value="3" selected>≥$3</option>
+        <option value="5">≥$5</option>
+      </select>
     </div>
-
-    <div class="sort-bar">
-      <button class="sort-btn active" id="sort-ev" onclick="setSort('ev')">Sort: EV</button>
-      <button class="sort-btn" id="sort-edge" onclick="setSort('edge')">Sort: Edge%</button>
-      <button class="sort-btn" id="sort-conf" onclick="setSort('conf')">Sort: Confidence</button>
-    </div>
-
-    <div class="section-label">Single bet edges</div>
-    <div id="signals-list"></div>
-
-    <div class="spacer"></div>
-    <div class="section-label">Best parlays</div>
-    <div id="parlays-list"></div>
-
-    <div style="height:40px"></div>
+    <div class="sec">Single bet edges</div>
+    <div id="sig-list"></div>
   </div>
 </div>
 
-<!-- ── MARKETS TAB ── -->
-<div class="tab-panel" id="panel-markets">
-  <div class="container">
-    <div class="spacer" style="height:16px"></div>
-
-    <div class="section-label">Add custom market</div>
-    <div class="market-form">
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Market name</label>
-          <input type="text" id="in-name" placeholder="e.g. Lakers to win vs Celtics" />
-        </div>
-        <div class="form-group">
-          <label>Kalshi YES price (0–1)</label>
-          <input type="number" id="in-yes" min="0.01" max="0.99" step="0.01" placeholder="0.45" />
-        </div>
-        <div class="form-group">
-          <label>Sportsbook true prob (0–1)</label>
-          <input type="number" id="in-true" min="0.01" max="0.99" step="0.01" placeholder="0.55" />
-        </div>
-        <div class="form-group">
-          <label>Home team</label>
-          <input type="text" id="in-home" placeholder="Los Angeles Lakers" />
-        </div>
-        <div class="form-group">
-          <label>Away team</label>
-          <input type="text" id="in-away" placeholder="Boston Celtics" />
-        </div>
-      </div>
-      <button class="btn-add" onclick="addMarket()">+ Add Market</button>
-    </div>
-
-    <div class="spacer" style="height:4px"></div>
-    <div class="section-label">Active markets <span id="market-count" style="color:var(--text-2)"></span></div>
-    <div id="market-list"></div>
-    <div style="height:40px"></div>
+<!-- PARLAYS -->
+<div class="panel" id="p-parlays">
+  <div class="wrap">
+    <div style="height:12px"></div>
+    <div class="sec">Best parlay combos</div>
+    <div id="par-list"></div>
   </div>
 </div>
 
-<!-- ── PARAMS TAB ── -->
-<div class="tab-panel" id="panel-params">
-  <div class="container">
-    <div class="spacer" style="height:16px"></div>
-
-    <div class="info-banner">
-      <span class="dot">●</span>
-      Changes apply immediately — switch to Results to see updated edges.
+<!-- ALL MARKETS -->
+<div class="panel" id="p-markets">
+  <div class="wrap">
+    <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap">
+      <input id="mkt-q" type="search" placeholder="Search markets…" oninput="renderMkts()"
+        style="flex:1;min-width:160px;padding:7px 12px;font-size:.82rem;background:var(--surface);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:var(--sans);outline:none"/>
+      <select id="mkt-cat" onchange="renderMkts()"
+        style="padding:7px 10px;font-size:.78rem;background:var(--surface-2);border:1px solid var(--border);border-radius:8px;color:var(--text-2);font-family:var(--sans);outline:none;cursor:pointer">
+        <option value="">All categories</option>
+      </select>
     </div>
+    <div id="mkt-list"></div>
+  </div>
+</div>
 
-    <div class="section-label">Algorithm parameters</div>
-
+<!-- PARAMS -->
+<div class="panel" id="p-params">
+  <div class="wrap" style="padding-top:14px">
     <div class="param-card">
-      <div class="param-row">
-        <div>
-          <div class="param-label">Min edge threshold</div>
-          <div class="param-sub">Kalshi vs true prob gap required</div>
-        </div>
-        <div class="param-val" id="val-min-edge">3%</div>
-      </div>
-      <input type="range" id="sl-min-edge" min="1" max="20" value="3" step="1"
-        oninput="updateParam('min-edge', this.value)" />
+      <div class="sec" style="margin-top:0">Edge filters</div>
+      <div class="pr"><span class="pl">Min edge</span><span class="pv" id="v-me">3%</span></div>
+      <input class="slider" type="range" min="0" max="20" step="1" value="3"
+        oninput="P.minEdge=+this.value/100;document.getElementById('v-me').textContent=this.value+'%';dRefresh()"/>
+      <div class="pd">Minimum probability gap to flag an edge.</div>
+      <div class="pr"><span class="pl">Min EV per $100</span><span class="pv" id="v-mev">$1</span></div>
+      <input class="slider" type="range" min="0" max="20" step="0.5" value="1"
+        oninput="P.minEv=+this.value;document.getElementById('v-mev').textContent='$'+this.value;dRefresh()"/>
+      <div class="pd">Expected value threshold.</div>
     </div>
-
     <div class="param-card">
-      <div class="param-row">
-        <div>
-          <div class="param-label">Min EV threshold</div>
-          <div class="param-sub">Minimum expected value per $1</div>
-        </div>
-        <div class="param-val" id="val-min-ev">$0.02</div>
-      </div>
-      <input type="range" id="sl-min-ev" min="0" max="20" value="2" step="1"
-        oninput="updateParam('min-ev', this.value)" />
+      <div class="sec" style="margin-top:0">Sentiment</div>
+      <div class="pr"><span class="pl">Sentiment weight</span><span class="pv" id="v-sw">3pp</span></div>
+      <input class="slider" type="range" min="0" max="10" step="1" value="3"
+        oninput="P.sentWeight=+this.value;document.getElementById('v-sw').textContent=this.value+'pp';dRefresh()"/>
+      <div class="pd">Max % points sentiment can shift true prob.</div>
+      <div class="pr"><span class="pl">Max rigging score</span><span class="pv" id="v-mr">10</span></div>
+      <input class="slider" type="range" min="1" max="10" step="1" value="10"
+        oninput="P.maxRig=+this.value;document.getElementById('v-mr').textContent=this.value;dRefresh()"/>
+      <div class="pd">Hide markets above this rigging score. Set 6 for liquid-only.</div>
     </div>
-
     <div class="param-card">
-      <div class="param-row">
-        <div>
-          <div class="param-label">Sentiment weight</div>
-          <div class="param-sub">Max prob shift from news (pp)</div>
-        </div>
-        <div class="param-val" id="val-sent">3pp</div>
-      </div>
-      <input type="range" id="sl-sent" min="0" max="10" value="3" step="1"
-        oninput="updateParam('sent', this.value)" />
+      <div class="sec" style="margin-top:0">Parlay</div>
+      <div class="pr"><span class="pl">Max legs</span><span class="pv" id="v-ml">3</span></div>
+      <input class="slider" type="range" min="2" max="5" step="1" value="3"
+        oninput="P.maxLegs=+this.value;document.getElementById('v-ml').textContent=this.value;dRefresh()"/>
+      <div class="pd">Max legs per generated parlay.</div>
+      <div class="pr"><span class="pl">Top N signals</span><span class="pv" id="v-tn">10</span></div>
+      <input class="slider" type="range" min="3" max="30" step="1" value="10"
+        oninput="P.topN=+this.value;document.getElementById('v-tn').textContent=this.value;dRefresh()"/>
     </div>
-
-    <div class="param-card">
-      <div class="param-row">
-        <div>
-          <div class="param-label">Max parlay legs</div>
-          <div class="param-sub">Maximum legs per parlay</div>
-        </div>
-        <div class="param-val" id="val-legs">3</div>
+    <div class="param-card" style="background:var(--accent-soft);border-color:rgba(192,57,43,.2)">
+      <div class="sec" style="margin-top:0;color:var(--accent)">Backend</div>
+      <div style="font-size:.8rem;color:var(--text-2);margin-bottom:8px">
+        <code style="font-family:var(--mono)">http://localhost:8000</code>
       </div>
-      <input type="range" id="sl-legs" min="2" max="5" value="3" step="1"
-        oninput="updateParam('legs', this.value)" />
-    </div>
-
-    <div class="param-card">
-      <div class="param-row">
-        <div>
-          <div class="param-label">Max parlays shown</div>
-          <div class="param-sub">Top N results to display</div>
-        </div>
-        <div class="param-val" id="val-top">10</div>
+      <div style="font-size:.74rem;color:var(--text-3)">
+        Start: <code style="font-family:var(--mono);font-size:.71rem">cd ~/Documents/nba-parlay && ./start.sh</code>
       </div>
-      <input type="range" id="sl-top" min="3" max="20" value="10" step="1"
-        oninput="updateParam('top', this.value)" />
     </div>
-
-    <div class="spacer"></div>
-    <div class="section-label">Confidence thresholds</div>
-
-    <div class="param-card">
-      <div class="param-row">
-        <div>
-          <div class="param-label">HIGH confidence cutoff</div>
-          <div class="param-sub">Edge ≥ this → HIGH</div>
-        </div>
-        <div class="param-val" id="val-conf-high">10%</div>
-      </div>
-      <input type="range" id="sl-conf-high" min="5" max="25" value="10" step="1"
-        oninput="updateParam('conf-high', this.value)" />
-    </div>
-
-    <div class="param-card">
-      <div class="param-row">
-        <div>
-          <div class="param-label">MED confidence cutoff</div>
-          <div class="param-sub">Edge ≥ this → MED (else LOW)</div>
-        </div>
-        <div class="param-val" id="val-conf-med">5%</div>
-      </div>
-      <input type="range" id="sl-conf-med" min="2" max="15" value="5" step="1"
-        oninput="updateParam('conf-med', this.value)" />
-    </div>
-
-    <div style="height:40px"></div>
   </div>
 </div>
 
 <script>
-// ── STATE ──────────────────────────────────────────────────────────────────
+const API='http://localhost:8000';
+const P={minEdge:.03,minEv:1,sentWeight:3,maxLegs:3,topN:10,maxRig:10};
+let sortM='ev',activeCat='all',minEvF=3,allMkts=[],sigs=[],pars=[],online=false,rTimer=null;
 
-const params = {
-  minEdge: 0.03,
-  minEv: 0.02,
-  sentWeight: 0.03,
-  maxLegs: 3,
-  topN: 10,
-  confHigh: 0.10,
-  confMed: 0.05,
-};
+// ── UTILS ──
+const fmtEv=n=>(n>0?'+':'')+n.toFixed(2);
+function catClass(c){if(!c)return'';const l=c.toLowerCase();if(l.includes('sport')||l.includes('nba')||l.includes('nfl')||l.includes('mlb')||l.includes('nhl'))return'sports';if(l.includes('polit')||l.includes('elect')||l.includes('president'))return'politics';if(l.includes('econ')||l.includes('financ')||l.includes('stock')||l.includes('fed'))return'finance';return'';}
+function confLbl(e){return e>=.10?'HIGH':e>=.05?'MED':'LOW';}
+function dRefresh(){clearTimeout(rTimer);rTimer=setTimeout(reRender,300);}
 
-let sortMode = 'ev';
-
-// ── GAME 6: OKC Thunder @ San Antonio Spurs — WCF — May 28 2026, 8:30 PM ET ──
-// Kalshi prices sourced from Polymarket/Kalshi pre-game markets.
-// True probs derived from FanDuel/DraftKings devigged moneylines and player prop consensus.
-// Series: OKC leads 3-2. Spurs ML: -162, OKC ML: +136. Total: 219.5.
-
-const DEMO_MARKETS = [
-  // ── GAME WINNER ──
-  { id: 'g6_sas_win', ticker: 'KXNBAGAME-26MAY28OKCSAS-YES',
-    title: 'Spurs win Game 6 (home, -162)',
-    yesProb: 0.585, noProb: 0.415,
-    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
-    trueHome: 0.593, trueAway: 0.407 },
-
-  // ── WEMBANYAMA PROPS ──
-  // Wemby averages 28.2 pts this series, was held to 20 in G5 on 4-of-15 shooting.
-  // Coach said he needs 30+ for SAS to win. Strong bounce-back candidate.
-  { id: 'g6_wemby_30pts', ticker: 'KXNBA-WEMBY-30PTS-G6',
-    title: 'Wembanyama 30+ points Game 6',
-    yesProb: 0.47, noProb: 0.53,
-    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
-    trueYes: 0.55 },
-
-  // Kalshi has Wemby 10+ Reb at 85% — high relative to his 10.8 rpg average.
-  // In 4 of 5 series games, OKC box-outs have been strong; NO is the value side.
-  { id: 'g6_wemby_10reb', ticker: 'KXNBA-WEMBY-10REB-G6',
-    title: 'Wembanyama 10+ rebounds Game 6',
-    yesProb: 0.85, noProb: 0.15,
-    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
-    trueYes: 0.71 },
-
-  // Wemby averages 3.4 blocks/game this series. Kalshi slightly underpricing.
-  { id: 'g6_wemby_3blk', ticker: 'KXNBA-WEMBY-3BLK-G6',
-    title: 'Wembanyama 3+ blocks Game 6',
-    yesProb: 0.57, noProb: 0.43,
-    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
-    trueYes: 0.66 },
-
-  // ── SGA PROPS ──
-  // SGA: 32 pts G5, 31.1 PPG playoffs avg. Dominant in elimination spots.
-  { id: 'g6_sga_30pts', ticker: 'KXNBA-SGA-30PTS-G6',
-    title: 'SGA 30+ points Game 6',
-    yesProb: 0.53, noProb: 0.47,
-    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
-    trueYes: 0.62 },
-
-  // SGA had 9 ast in G5. Averages 6.8 apg in series. Kalshi pricing it conservatively.
-  { id: 'g6_sga_7ast', ticker: 'KXNBA-SGA-7AST-G6',
-    title: 'SGA 7+ assists Game 6',
-    yesProb: 0.54, noProb: 0.46,
-    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
-    trueYes: 0.64 },
-
-  // ── GAME TOTAL ──
-  // G5: 241 pts (OVER). G4: 206 (UNDER). G3: 212 (UNDER). Line: 219.5.
-  // 2 of last 3 under, but SAS home crowds push pace. Slight lean OVER.
-  { id: 'g6_total_over', ticker: 'KXNBATOTAL-26MAY28OKCSAS-219',
-    title: 'Game 6 total OVER 219.5',
-    yesProb: 0.48, noProb: 0.52,
-    home: 'San Antonio Spurs', away: 'Oklahoma City Thunder',
-    trueYes: 0.52 },
-];
-
-let customMarkets = [];
-let nextId = 1;
-
-// ── ALGORITHM ──────────────────────────────────────────────────────────────
-
-function adjustProb(base, sentiment) {
-  return Math.max(0.01, Math.min(0.99, base + sentiment * params.sentWeight));
+// ── BACKEND ──
+async function checkBE(){
+  try{const r=await fetch(`${API}/api/health`,{signal:AbortSignal.timeout(3000)});if(r.ok){online=true;setStatus('live');document.getElementById('backend-banner').classList.remove('show');return true;}}catch(e){}
+  online=false;setStatus('offline');document.getElementById('backend-banner').classList.add('show');return false;
 }
-
-function getConf(edge) {
-  if (edge >= params.confHigh) return 'HIGH';
-  if (edge >= params.confMed)  return 'MED';
-  return 'LOW';
+function setStatus(m){
+  const d=document.getElementById('ndot'),b=document.getElementById('nbadge');
+  if(m==='live'){d.className='nav-dot live';b.textContent='● LIVE';b.className='nav-badge live';}
+  else if(m==='loading'){d.className='nav-dot';b.textContent='Loading…';b.className='nav-badge';}
+  else{d.className='nav-dot';b.textContent='⚠ OFFLINE';b.className='nav-badge offline';}
 }
-
-function calcEv(trueProb, kalshiPrice) {
-  return (trueProb * (1 - kalshiPrice)) - ((1 - trueProb) * kalshiPrice);
+async function loadMkts(){
+  if(!online)return;setStatus('loading');
+  try{
+    const r=await fetch(`${API}/api/markets?min_edge=${P.minEdge}&limit=500`);
+    const d=await r.json();
+    allMkts=d.markets||[];
+    setStatus('live');
+    document.getElementById('ts').textContent=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    buildCats();reRender();
+  }catch(e){setStatus('offline');document.getElementById('backend-banner').classList.add('show');}
 }
+async function fullRefresh(){const ok=await checkBE();if(ok)await loadMkts();}
 
-function scoreMarket(m) {
-  const signals = [];
-
-  // YES side: Kalshi sells YES at yesProb, true prob depends on which team
-  // For custom markets, trueYes is stored directly
-  const trueYes = m.trueYes !== undefined ? m.trueYes : (() => {
-    const titleLow = m.title.toLowerCase();
-    const homeParts = m.home.toLowerCase().split(' ');
-    const homeMatch = homeParts.some(p => p.length > 3 && titleLow.includes(p));
-    return homeMatch ? m.trueHome : m.trueAway;
-  })();
-
-  const trueNo = 1 - trueYes;
-
-  // YES side
-  const edgeYes = adjustProb(trueYes, 0) - m.yesProb;
-  if (edgeYes >= params.minEdge) {
-    const ev = calcEv(adjustProb(trueYes, 0), m.yesProb);
-    if (ev >= params.minEv) {
-      signals.push({
-        ticker: m.ticker,
-        title: m.title,
-        side: 'YES',
-        kalshiPrice: m.yesProb,
-        trueProb: +adjustProb(trueYes, 0).toFixed(3),
-        edge: +edgeYes.toFixed(3),
-        ev100: +(ev * 100).toFixed(2),
-        conf: getConf(edgeYes),
-        home: m.home,
-        away: m.away,
-        id: m.id,
-      });
+// ── SCORING ──
+function applyFilters(m){return m.filter(x=>(x.rigging?.score||5)<=P.maxRig&&(activeCat==='all'||(x.category||'').toLowerCase().includes(activeCat.toLowerCase())));}
+function buildSigs(mkts){
+  const out=[];
+  for(const m of mkts){
+    const e=m.edge;if(!e)continue;
+    if(e.edge_yes>=P.minEdge&&e.ev_yes>=P.minEv)out.push({ticker:m.ticker,title:m.title,category:m.category,side:'YES',kalshiPrice:e.kalshi_yes,trueProb:e.true_yes,edge:e.edge_yes,ev100:e.ev_yes,conf:confLbl(e.edge_yes),rigging:m.rigging,yes_bid:m.yes_bid,yes_ask:m.yes_ask,ev_yes:e.ev_yes,ev_no:e.ev_no,edge_yes:e.edge_yes,edge_no:e.edge_no,true_yes:e.true_yes,true_no:e.true_no});
+    if(e.edge_no>=P.minEdge&&e.ev_no>=P.minEv)out.push({ticker:m.ticker,title:m.title,category:m.category,side:'NO',kalshiPrice:e.kalshi_no,trueProb:e.true_no,edge:e.edge_no,ev100:e.ev_no,conf:confLbl(e.edge_no),rigging:m.rigging,yes_bid:m.yes_bid,yes_ask:m.yes_ask,ev_yes:e.ev_yes,ev_no:e.ev_no,edge_yes:e.edge_yes,edge_no:e.edge_no,true_yes:e.true_yes,true_no:e.true_no});
+  }
+  if(sortM==='ev')out.sort((a,b)=>b.ev100-a.ev100);
+  if(sortM==='edge')out.sort((a,b)=>b.edge-a.edge);
+  if(sortM==='rig')out.sort((a,b)=>(a.rigging?.score||5)-(b.rigging?.score||5));
+  return out;
+}
+function combos(arr,k){if(k===1)return arr.map(x=>[x]);const o=[];for(let i=0;i<arr.length;i++)for(const r of combos(arr.slice(i+1),k-1))o.push([arr[i],...r]);return o;}
+function buildPars(ss){
+  const top=ss.slice(0,P.topN),out=[];
+  for(let k=2;k<=Math.min(P.maxLegs,top.length);k++){
+    for(const c of combos(top,k)){
+      if(new Set(c.map(x=>x.ticker)).size<c.length)continue;
+      const tp=c.reduce((a,s)=>a*s.trueProb,1);
+      const pay=c.reduce((a,s)=>a*(1/s.kalshiPrice),1);
+      const ev=tp*(pay-1)-(1-tp);
+      if(ev>0)out.push({legs:c,tp,pay,ev100:+(ev*100).toFixed(2)});
     }
   }
-
-  // NO side
-  const edgeNo = adjustProb(trueNo, 0) - m.noProb;
-  if (edgeNo >= params.minEdge) {
-    const ev = calcEv(adjustProb(trueNo, 0), m.noProb);
-    if (ev >= params.minEv) {
-      signals.push({
-        ticker: m.ticker,
-        title: m.title,
-        side: 'NO',
-        kalshiPrice: m.noProb,
-        trueProb: +adjustProb(trueNo, 0).toFixed(3),
-        edge: +edgeNo.toFixed(3),
-        ev100: +(ev * 100).toFixed(2),
-        conf: getConf(edgeNo),
-        home: m.home,
-        away: m.away,
-        id: m.id,
-      });
-    }
-  }
-
-  return signals;
+  return out.sort((a,b)=>b.ev100-a.ev100).slice(0,P.topN);
 }
 
-function allMarkets() {
-  return [...DEMO_MARKETS, ...customMarkets];
+// ── CATEGORIES ──
+function buildCats(){
+  const cats={};for(const m of allMkts){const c=m.category||'Other';cats[c]=(cats[c]||0)+1;}
+  const cp=document.getElementById('cat-pills');
+  cp.innerHTML=`<button class="pill ${activeCat==='all'?'active':''}" onclick="filterCat('all')" data-c="all">All (${allMkts.length})</button>`;
+  const sel=document.getElementById('mkt-cat');sel.innerHTML='<option value="">All categories</option>';
+  Object.entries(cats).sort((a,b)=>b[1]-a[1]).forEach(([n,cnt])=>{
+    cp.innerHTML+=`<button class="pill ${activeCat===n?'active':''}" onclick="filterCat('${n}')" data-c="${n}">${n} (${cnt})</button>`;
+    sel.innerHTML+=`<option value="${n}">${n} (${cnt})</option>`;
+  });
+}
+function filterCat(c){activeCat=c;document.querySelectorAll('.pill').forEach(p=>p.classList.toggle('active',p.dataset.c===c));reRender();}
+
+// ── RENDER ──
+function reRender(){
+  const f=applyFilters(allMkts);sigs=buildSigs(f);pars=buildPars(sigs);
+  renderSigs();renderPars();renderMkts();
+  document.getElementById('s-edges').textContent=sigs.length;
+  document.getElementById('s-mkts').textContent=allMkts.length;
+  document.getElementById('c-results').textContent=sigs.length;
+  document.getElementById('c-parlays').textContent=pars.length;
+  document.getElementById('c-markets').textContent=allMkts.length;
+  if(sigs.length)document.getElementById('s-bestev').textContent='$'+sigs[0].ev100.toFixed(1);
+  if(allMkts.length){const ar=allMkts.reduce((a,m)=>a+(m.rigging?.score||5),0)/allMkts.length;document.getElementById('s-rig').textContent=ar.toFixed(1);}
 }
 
-function runAlgo() {
-  const markets = allMarkets();
-  let signals = [];
-  for (const m of markets) {
-    signals = signals.concat(scoreMarket(m));
-  }
-
-  // Sort
-  if (sortMode === 'ev')   signals.sort((a,b) => b.ev100 - a.ev100);
-  if (sortMode === 'edge') signals.sort((a,b) => b.edge - a.edge);
-  if (sortMode === 'conf') signals.sort((a,b) => ['HIGH','MED','LOW'].indexOf(a.conf) - ['HIGH','MED','LOW'].indexOf(b.conf));
-
-  const parlays = buildParlays(signals);
-  return { signals, parlays };
+function renderSigs(){
+  const el=document.getElementById('sig-list');
+  const list=sigs.filter(s=>s.ev100>=minEvF);
+  if(!allMkts.length){el.innerHTML=`<div class="empty"><span class="spinner"></span>Waiting for backend…<br><small>Run ./start.sh in ~/Documents/nba-parlay</small></div>`;return;}
+  if(!list.length){el.innerHTML=`<div class="empty"><strong>No edges found</strong>Lower Min Edge or EV in Params.</div>`;return;}
+  el.innerHTML=list.map((s,i)=>sigCard(s,i)).join('');
 }
 
-function buildParlays(signals) {
-  const combos = [];
-  const maxLegs = Math.min(params.maxLegs, signals.length);
-
-  for (let r = 2; r <= maxLegs; r++) {
-    const idxCombos = getCombinations([...signals.keys()], r);
-    for (const idxs of idxCombos) {
-      const legs = idxs.map(i => signals[i]);
-      // No duplicate tickers
-      const tickers = legs.map(l => l.ticker);
-      if (new Set(tickers).size < tickers.length) continue;
-
-      let combinedTrue = 1, combinedCost = 1;
-      for (const l of legs) {
-        combinedTrue *= l.trueProb;
-        combinedCost *= l.kalshiPrice;
-      }
-      const payout = 1 / combinedCost;
-      const ev = combinedTrue * payout - 1;
-      if (ev <= 0) continue;
-
-      const confOrder = ['HIGH','MED','LOW'];
-      const worstConf = legs.reduce((w,l) => confOrder.indexOf(l.conf) > confOrder.indexOf(w) ? l.conf : w, 'HIGH');
-
-      combos.push({
-        legs,
-        numLegs: r,
-        combinedTrue: +combinedTrue.toFixed(4),
-        combinedCost: +combinedCost.toFixed(4),
-        payoutMultiple: +payout.toFixed(2),
-        ev100: +(ev * 100).toFixed(2),
-        conf: worstConf,
-      });
-    }
-  }
-
-  combos.sort((a,b) => b.ev100 - a.ev100);
-  return combos.slice(0, params.topN);
-}
-
-function getCombinations(arr, r) {
-  if (r === 1) return arr.map(x => [x]);
-  const result = [];
-  for (let i = 0; i <= arr.length - r; i++) {
-    const rest = getCombinations(arr.slice(i+1), r-1);
-    for (const combo of rest) result.push([arr[i], ...combo]);
-  }
-  return result;
-}
-
-// ── RENDER ─────────────────────────────────────────────────────────────────
-
-function edgeColor(edge) {
-  if (edge >= 0.10) return '#27ae60';
-  if (edge >= 0.05) return '#e67e22';
-  return '#928f8b';
-}
-
-function renderSignals(signals) {
-  const el = document.getElementById('signals-list');
-  if (!signals.length) {
-    el.innerHTML = '<div class="empty">No edges above current thresholds.<br>Try lowering Min Edge in Params.</div>';
-    return;
-  }
-  el.innerHTML = signals.map(s => `
-    <div class="signal-card">
-      <div class="signal-header">
-        <div>
-          <div class="signal-market">${s.title}</div>
-          <div class="signal-matchup">${s.home} vs ${s.away}</div>
-          <div style="display:flex;gap:6px;margin-top:8px">
-            <span class="side-badge">${s.side}</span>
-            <span class="conf-badge conf-${s.conf}">${s.conf}</span>
-          </div>
-        </div>
-        <div>
-          <div class="signal-ev">$${s.ev100.toFixed(2)}</div>
-          <div class="signal-ev-label">EV per $100</div>
-        </div>
+function sigCard(s,i){
+  const bw=Math.min(100,s.edge*500);
+  const cc=catClass(s.category);
+  const rig=s.rigging||{};
+  const isY=s.side==='YES';
+  const midCents=((s.yes_bid||0)+(s.yes_ask||0))/2;
+  const yesC=midCents.toFixed(0);
+  const noC=(100-midCents).toFixed(0);
+  return`<div class="sc ${isY?'yes':'no'}" id="sc${i}" onclick="toggleCard(${i})">
+  <div class="sc-head">
+    <div class="sc-r1">
+      <div class="sc-title">${s.title}</div>
+      <div class="cat-tag ${cc}">${(s.category||'OTHER').toUpperCase()}</div>
+    </div>
+    <div class="sc-r2">
+      <span class="side-b ${s.side}">${s.side}</span>
+      <span class="ev-b pos">EV $${s.ev100.toFixed(1)}/100</span>
+      <span class="conf-b ${s.conf}">${s.conf}</span>
+      <span class="rig-b ${rig.color||'amber'}" title="${rig.note||''}">RIG ${rig.score||'?'}/10</span>
+    </div>
+    <div class="ebar"><div class="ebar-bg"><div class="ebar-fill${isY?'':' no'}" style="width:${bw}%"></div></div><span class="ebar-lbl">${(s.edge*100).toFixed(1)}% edge</span></div>
+  </div>
+  <div class="sc-body">
+    <div class="prices">
+      <div class="pb YES${isY?' best':''}">
+        <div class="pb-side">YES</div>
+        <div class="pb-val">${yesC}¢</div>
+        <div class="pb-ev">EV $${s.ev_yes.toFixed(1)} · true ${(s.true_yes).toFixed(2)}</div>
+        ${isY?`<button class="pb-cta" onclick="gKalshi('${s.ticker}','YES',event)">Buy YES on Kalshi →</button>`:''}
       </div>
-      <div class="signal-stats">
-        <div class="stat-box">
-          <div class="stat-box-val">${s.kalshiPrice.toFixed(2)}</div>
-          <div class="stat-box-key">Kalshi</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-box-val">${s.trueProb.toFixed(2)}</div>
-          <div class="stat-box-key">True P</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-box-val" style="color:${edgeColor(s.edge)}">+${(s.edge*100).toFixed(1)}%</div>
-          <div class="stat-box-key">Edge</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-box-val">${(s.trueProb*100).toFixed(0)}%</div>
-          <div class="stat-box-key">Win%</div>
-        </div>
-      </div>
-      <div class="edge-bar-track">
-        <div class="edge-bar-fill" style="width:${Math.min(s.edge/0.3*100,100)}%;background:${edgeColor(s.edge)}"></div>
+      <div class="pb NO${!isY?' best':''}">
+        <div class="pb-side">NO</div>
+        <div class="pb-val">${noC}¢</div>
+        <div class="pb-ev">EV $${s.ev_no.toFixed(1)} · true ${(s.true_no).toFixed(2)}</div>
+        ${!isY?`<button class="pb-cta" onclick="gKalshi('${s.ticker}','NO',event)">Buy NO on Kalshi →</button>`:''}
       </div>
     </div>
-  `).join('');
-}
-
-function renderParlays(parlays) {
-  const el = document.getElementById('parlays-list');
-  if (!parlays.length) {
-    el.innerHTML = '<div class="empty">No positive-EV parlays found.<br>Add more markets or lower thresholds.</div>';
-    return;
-  }
-  el.innerHTML = parlays.map((p, i) => `
-    <div class="parlay-card ${i === 0 ? 'top' : ''}">
-      <div class="parlay-header">
-        <div>
-          <div class="parlay-num">Parlay #${i+1} &bull; ${p.numLegs} legs</div>
-          <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
-            <div class="parlay-ev">$${p.ev100.toFixed(2)}</div>
-            <div style="font-size:0.78rem;color:var(--text-2)">EV per $100</div>
-          </div>
-        </div>
-        <span class="conf-badge conf-${p.conf}">${p.conf}</span>
-      </div>
-      <div class="parlay-meta">
-        <span class="meta-chip"><b>${p.payoutMultiple}x</b> payout</span>
-        <span class="meta-chip"><b>${(p.combinedTrue*100).toFixed(1)}%</b> true prob</span>
-        <span class="meta-chip">cost <b>${p.combinedCost.toFixed(3)}</b></span>
-      </div>
-      <div class="parlay-legs">
-        ${p.legs.map(l => `
-          <div class="parlay-leg">
-            <span class="leg-arrow">›</span>
-            <span class="leg-market">${l.title} — ${l.side}</span>
-            <span class="leg-price">@${l.kalshiPrice.toFixed(2)} (true ${l.trueProb.toFixed(2)})</span>
-          </div>
-        `).join('')}
+    <div class="rig-detail">
+      <div class="rig-title"><span class="rig-b ${rig.color||'amber'}">RIG ${rig.score||'?'}/10</span>${rig.label||'Unknown'} — Market Quality</div>
+      <div class="rig-row"><span>Bid-ask spread</span><span>${rig.spread_pct!=null?rig.spread_pct+'%':'—'}</span></div>
+      <div class="rig-row"><span>24h volume</span><span>${(rig.volume_24h||0).toLocaleString()} contracts</span></div>
+      <div class="rig-row"><span>Open interest</span><span>${(rig.open_interest||0).toLocaleString()}</span></div>
+      <div style="margin-top:6px;font-size:.72rem;color:var(--text-3)">${rig.note||''}</div>
+    </div>
+    <div class="sent">
+      <div class="sent-hd"><span>📡 News · Reddit · TikTok</span><span id="ss${i}" style="font-family:var(--mono);font-size:.62rem;color:var(--text-3)">—</span></div>
+      <div id="sc${i}" style="padding:4px 12px 10px;background:var(--surface-2)">
+        <button class="load-btn" onclick="loadSent('${s.ticker}','${encodeURIComponent(s.title)}',${i},event)">Load sentiment →</button>
       </div>
     </div>
-  `).join('');
+  </div>
+</div>`;
 }
 
-function renderMarkets() {
-  const markets = allMarkets();
-  const el = document.getElementById('market-list');
-  document.getElementById('market-count').textContent = `(${markets.length})`;
-  el.innerHTML = markets.map(m => `
-    <div class="market-item ${m.demo ? 'demo' : 'custom'}">
-      <div style="flex:1;min-width:0">
-        <div class="market-name" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${m.title}</div>
-        <div class="market-sub">${m.home} vs ${m.away}</div>
+function toggleCard(i){document.getElementById('sc'+i)?.classList.toggle('open');}
+function gKalshi(t,side,e){e.stopPropagation();window.open(`https://kalshi.com/markets/${t.split('-')[0].toLowerCase()}/${t.toLowerCase()}`,'_blank');}
+
+async function loadSent(ticker,enc,i,e){
+  e.stopPropagation();
+  const title=decodeURIComponent(enc);
+  const stEl=document.getElementById('ss'+i);
+  const bdEl=document.getElementById('sc'+i);
+  if(!bdEl)return;
+  stEl.textContent='loading…';
+  bdEl.innerHTML=`<div style="padding:6px;font-size:.75rem;color:var(--text-3)"><span class="spinner"></span>Scanning sources…</div>`;
+  try{
+    const r=await fetch(`${API}/api/sentiment?q=${encodeURIComponent(title)}`);
+    const d=await r.json();
+    const sc=d.composite;
+    const col=sc>.05?'var(--green)':sc<-.05?'var(--accent)':'var(--text-2)';
+    const news=d.sources?.google_news||{};const reddit=d.sources?.reddit||{};const tiktok=d.sources?.tiktok||{};
+    const hls=(news.headlines||[]).slice(0,4).map(h=>`<div style="padding:2px 0;border-bottom:1px solid var(--border);font-size:.71rem">${h}</div>`).join('');
+    const tt=tiktok.samples?.map(s=>`<div style="padding:2px 0;font-size:.71rem;color:var(--text-3)">• ${s}</div>`).join('')||'';
+    bdEl.innerHTML=`<div class="sent-bd">
+      <div class="sent-comp" style="color:${col}">${d.label}</div>
+      <div style="font-family:var(--mono);font-size:.71rem;color:var(--text-3);margin-bottom:8px">composite ${sc>0?'+':''}${sc.toFixed(3)} · nudges prob ${d.adj_pp>0?'+':''}${d.adj_pp}pp</div>
+      <div class="sent-row"><span>Google News (${news.count||0})</span><span style="font-family:var(--mono)">${(news.score||0).toFixed(3)}</span></div>
+      <div class="sent-row"><span>Reddit (${reddit.count||0})</span><span style="font-family:var(--mono)">${(reddit.score||0).toFixed(3)}</span></div>
+      <div class="sent-row"><span>TikTok proxy (${tiktok.count||0})</span><span style="font-family:var(--mono)">${(tiktok.score||0).toFixed(3)}</span></div>
+      ${hls?`<div class="sent-hl">${hls}</div>`:''}
+      ${tt?`<div style="margin-top:6px">${tt}</div>`:''}
+    </div>`;
+    stEl.textContent=d.label.split(' ')[0];
+  }catch(err){bdEl.innerHTML=`<div style="padding:6px;font-size:.73rem;color:var(--text-3)">Sentiment unavailable</div>`;stEl.textContent='error';}
+}
+
+function renderPars(){
+  const el=document.getElementById('par-list');
+  if(!pars.length){el.innerHTML=`<div class="empty"><strong>No parlays</strong>Lower Min Edge in Params.</div>`;return;}
+  el.innerHTML=pars.map((p,i)=>{
+    const legs=p.legs.map(l=>`<div class="leg"><span class="leg-s ${l.side}">${l.side}</span><span class="leg-t">${l.title}</span><span class="leg-p">${(l.kalshiPrice*100).toFixed(0)}¢</span></div>`).join('');
+    return`<div class="pc"><div class="pc-hd"><div class="pc-title">${p.legs.length}-leg Parlay</div><div class="pc-ev">EV +$${p.ev100.toFixed(1)}/100</div></div>${legs}<div style="display:flex;justify-content:space-between;margin-top:8px;font-size:.71rem;color:var(--text-3);font-family:var(--mono)"><span>true prob ${(p.tp*100).toFixed(1)}%</span><span>payout ${p.pay.toFixed(1)}x</span></div></div>`;
+  }).join('');
+}
+
+function renderMkts(){
+  const el=document.getElementById('mkt-list');
+  const q=(document.getElementById('mkt-q')?.value||'').toLowerCase();
+  const cf=document.getElementById('mkt-cat')?.value||'';
+  let list=allMkts;
+  if(q)list=list.filter(m=>(m.title||'').toLowerCase().includes(q));
+  if(cf)list=list.filter(m=>(m.category||'')===cf);
+  list=list.slice(0,100);
+  if(!list.length){el.innerHTML=`<div class="empty"><strong>No markets</strong></div>`;return;}
+  el.innerHTML=list.map(m=>{
+    const e=m.edge||{};const rig=m.rigging||{};
+    const midY=((m.yes_bid||0)+(m.yes_ask||0))/200;
+    const cc=catClass(m.category);
+    const bev=Math.max(e.ev_yes||0,e.ev_no||0);
+    const bs=(e.ev_yes||0)>=(e.ev_no||0)?'YES':'NO';
+    return`<div class="mkt-row">
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:8px;margin-bottom:4px">
+        <div style="font-size:.84rem;font-weight:500;line-height:1.4;flex:1">${m.title}</div>
+        <div class="cat-tag ${cc}">${(m.category||'OTHER').toUpperCase()}</div>
       </div>
-      <div class="market-prices">
-        <div class="price-chip">Y <span>${m.yesProb.toFixed(2)}</span></div>
-        <div class="price-chip">N <span>${m.noProb.toFixed(2)}</span></div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+        <span class="side-b ${bs}">${bs}</span>
+        <span style="font-family:var(--mono);font-size:.72rem;color:var(--text-2)">${(midY*100).toFixed(0)}¢ YES · ${((1-midY)*100).toFixed(0)}¢ NO</span>
+        ${bev>0?`<span class="ev-b pos">EV $${bev.toFixed(1)}</span>`:''}
+        <span class="rig-b ${rig.color||'amber'}">RIG ${rig.score||'?'}/10</span>
+        <span style="font-family:var(--mono);font-size:.65rem;color:var(--text-3);margin-left:auto">${(m.volume_24h||0).toLocaleString()} vol</span>
       </div>
-      ${m.demo ? '' : `<button class="btn-remove" onclick="removeMarket('${m.id}')">×</button>`}
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
-function updateStats(signals, parlays) {
-  document.getElementById('stat-edges').textContent = signals.length;
-  document.getElementById('stat-parlays').textContent = parlays.length;
-  if (signals.length) {
-    const best = Math.max(...signals.map(s => s.ev100));
-    document.getElementById('stat-best-ev').textContent = '$' + best.toFixed(0);
-  } else {
-    document.getElementById('stat-best-ev').textContent = '—';
-  }
-}
+// ── NAV ──
+function sw(n){document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));document.getElementById('p-'+n).classList.add('active');document.getElementById('t-'+n).classList.add('active');}
+function setSort(m){sortM=m;document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));document.getElementById('sb-'+m).classList.add('active');reRender();}
+function setMinEv(v){minEvF=+v;reRender();}
 
-function refresh() {
-  const { signals, parlays } = runAlgo();
-  renderSignals(signals);
-  renderParlays(parlays);
-  updateStats(signals, parlays);
-  renderMarkets();
-}
-
-// ── CONTROLS ───────────────────────────────────────────────────────────────
-
-function updateParam(key, rawVal) {
-  const v = parseFloat(rawVal);
-  if (key === 'min-edge') {
-    params.minEdge = v / 100;
-    document.getElementById('val-min-edge').textContent = v + '%';
-  } else if (key === 'min-ev') {
-    params.minEv = v / 100;
-    document.getElementById('val-min-ev').textContent = '$' + (v/100).toFixed(2);
-  } else if (key === 'sent') {
-    params.sentWeight = v / 100;
-    document.getElementById('val-sent').textContent = v + 'pp';
-  } else if (key === 'legs') {
-    params.maxLegs = v;
-    document.getElementById('val-legs').textContent = v;
-  } else if (key === 'top') {
-    params.topN = v;
-    document.getElementById('val-top').textContent = v;
-  } else if (key === 'conf-high') {
-    params.confHigh = v / 100;
-    document.getElementById('val-conf-high').textContent = v + '%';
-  } else if (key === 'conf-med') {
-    params.confMed = v / 100;
-    document.getElementById('val-conf-med').textContent = v + '%';
-  }
-  refresh();
-}
-
-function setSort(mode) {
-  sortMode = mode;
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('sort-' + mode).classList.add('active');
-  refresh();
-}
-
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t,i) => {
-    const names = ['results','markets','params'];
-    t.classList.toggle('active', names[i] === tab);
-  });
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('panel-' + tab).classList.add('active');
-}
-
-function addMarket() {
-  const name = document.getElementById('in-name').value.trim();
-  const yes  = parseFloat(document.getElementById('in-yes').value);
-  const trueP = parseFloat(document.getElementById('in-true').value);
-  const home = document.getElementById('in-home').value.trim();
-  const away = document.getElementById('in-away').value.trim();
-
-  if (!name || isNaN(yes) || isNaN(trueP) || !home || !away) {
-    alert('Please fill in all fields.');
-    return;
-  }
-  if (yes <= 0 || yes >= 1 || trueP <= 0 || trueP >= 1) {
-    alert('Prices must be between 0 and 1.');
-    return;
-  }
-
-  customMarkets.push({
-    id: 'c' + nextId++,
-    ticker: 'CUSTOM-' + nextId,
-    title: name,
-    yesProb: yes,
-    noProb: +(1 - yes).toFixed(3),
-    home, away,
-    trueYes: trueP,
-    trueHome: trueP,
-    trueAway: 1 - trueP,
-    demo: false,
-  });
-
-  // Clear form
-  ['in-name','in-yes','in-true','in-home','in-away'].forEach(id => {
-    document.getElementById(id).value = '';
-  });
-
-  refresh();
-}
-
-function removeMarket(id) {
-  customMarkets = customMarkets.filter(m => m.id !== id);
-  refresh();
-}
-
-// ── INIT ───────────────────────────────────────────────────────────────────
-refresh();
+// ── INIT ──
+(async()=>{
+  const ok=await checkBE();
+  if(ok){await loadMkts();}
+  else{document.getElementById('sig-list').innerHTML=`<div class="empty"><strong>Backend offline</strong>Open Terminal and run:<br><br><code style="font-family:var(--mono);font-size:.78rem;background:var(--surface-2);padding:6px 12px;border-radius:6px;display:inline-block">cd ~/Documents/nba-parlay && ./start.sh</code><br><br>Then tap ↻ Refresh.</div>`;}
+})();
 </script>
 </body>
 </html>
