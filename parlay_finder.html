@@ -1,0 +1,802 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏀 NBA Parlay Finder</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  :root {
+    --bg: #0d0f14;
+    --surface: #161b27;
+    --card: #1e2535;
+    --card2: #252d40;
+    --accent: #3b82f6;
+    --accent2: #22c55e;
+    --danger: #ef4444;
+    --gold: #f59e0b;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --border: #2d3748;
+    --radius: 12px;
+  }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; min-height: 100vh; }
+
+  /* Header */
+  .header { background: linear-gradient(135deg, #1e2535 0%, #161b27 100%); border-bottom: 1px solid var(--border); padding: 16px 20px; position: sticky; top: 0; z-index: 100; }
+  .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo h1 { font-size: 1.4rem; font-weight: 700; background: linear-gradient(135deg, #3b82f6, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+  .header-meta { display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+  .refresh-info { display: flex; align-items: center; gap: 6px; font-size: 0.78rem; color: var(--muted); }
+  .live-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent2); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: all 0.2s; }
+  .btn-primary { background: var(--accent); color: white; }
+  .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+  .btn-sm { padding: 5px 12px; font-size: 0.8rem; border-radius: 6px; }
+  .btn-ghost { background: var(--card2); color: var(--text); border: 1px solid var(--border); }
+  .btn-ghost:hover { background: var(--border); }
+  .btn-danger { background: var(--danger); color: white; }
+
+  /* Setup Banner */
+  .setup-wrap { max-width: 1200px; margin: 20px auto; padding: 0 20px; }
+  .setup-banner { background: var(--card); border: 1px solid #3b82f640; border-radius: var(--radius); padding: 20px; }
+  .setup-banner h3 { color: var(--accent); margin-bottom: 8px; font-size: 1rem; }
+  .setup-banner p { color: var(--muted); font-size: 0.85rem; margin-bottom: 14px; line-height: 1.6; }
+  .key-input-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .key-input { flex: 1; min-width: 200px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 9px 14px; color: var(--text); font-size: 0.9rem; font-family: monospace; }
+  .key-input:focus { outline: none; border-color: var(--accent); }
+
+  /* Layout */
+  .main { max-width: 1200px; margin: 0 auto; padding: 20px; display: grid; grid-template-columns: 1fr 340px; gap: 20px; }
+  @media (max-width: 900px) { .main { grid-template-columns: 1fr; } }
+
+  /* Filter bar */
+  .filter-bar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .filter-btn { padding: 6px 14px; border-radius: 20px; border: 1px solid var(--border); background: var(--card); color: var(--muted); font-size: 0.82rem; cursor: pointer; transition: all 0.2s; }
+  .filter-btn.active { background: var(--accent); color: white; border-color: var(--accent); }
+  .search-box { flex: 1; min-width: 160px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 7px 12px; color: var(--text); font-size: 0.85rem; }
+  .search-box:focus { outline: none; border-color: var(--accent); }
+  .results-count { color: var(--muted); font-size: 0.82rem; margin-left: auto; }
+
+  /* Game Cards */
+  .games-list { display: flex; flex-direction: column; gap: 12px; }
+  .game-card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; transition: border-color 0.2s; }
+  .game-card:hover { border-color: #3b82f640; }
+  .game-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 16px; background: var(--card2); border-bottom: 1px solid var(--border); }
+  .game-time { font-size: 0.78rem; color: var(--muted); }
+  .game-league { background: #3b82f620; color: var(--accent); border-radius: 4px; padding: 2px 8px; font-size: 0.72rem; font-weight: 700; }
+  .teams-row { display: flex; align-items: center; gap: 12px; padding: 14px 16px 8px; }
+  .team { flex: 1; }
+  .team-name { font-weight: 700; font-size: 0.95rem; }
+  .team-record { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+  .vs-badge { color: var(--muted); font-size: 0.8rem; font-weight: 600; background: var(--card2); padding: 4px 10px; border-radius: 6px; flex-shrink: 0; }
+  .odds-grid { display: grid; gap: 8px; padding: 8px 16px 14px; }
+  .odds-col { text-align: center; }
+  .odds-label { font-size: 0.7rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .odds-row { display: flex; gap: 6px; }
+  .odds-btn { flex: 1; padding: 8px 6px; border-radius: 8px; border: 1px solid var(--border); background: var(--card2); cursor: pointer; transition: all 0.2s; text-align: center; }
+  .odds-btn:hover { border-color: var(--accent); background: #3b82f610; }
+  .odds-btn.selected { border-color: var(--accent); background: #3b82f620; box-shadow: 0 0 0 1px var(--accent); }
+  .odds-btn.selected .odds-value { color: var(--accent); }
+  .odds-btn .team-short { font-size: 0.7rem; color: var(--muted); margin-bottom: 2px; }
+  .odds-btn .odds-value { font-size: 0.9rem; font-weight: 700; color: var(--text); }
+  .odds-btn .odds-value.pos { color: var(--accent2); }
+
+  /* Parlay Builder */
+  .parlay-panel { position: sticky; top: 80px; height: fit-content; }
+  .panel { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .panel-header { padding: 14px 16px; background: var(--card2); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; }
+  .panel-title { font-weight: 700; font-size: 1rem; display: flex; align-items: center; gap: 8px; }
+  .leg-count { background: var(--accent); color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; }
+  .parlay-legs { padding: 12px; display: flex; flex-direction: column; gap: 8px; min-height: 80px; }
+  .empty-state { text-align: center; color: var(--muted); font-size: 0.85rem; padding: 30px 16px; }
+  .empty-icon { font-size: 2rem; margin-bottom: 8px; }
+  .parlay-leg { background: var(--card2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  .leg-info { flex: 1; min-width: 0; }
+  .leg-pick { font-weight: 600; font-size: 0.85rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .leg-type { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+  .leg-odds { font-weight: 700; font-size: 0.9rem; color: var(--accent); white-space: nowrap; }
+  .leg-remove { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1rem; padding: 0; transition: color 0.2s; }
+  .leg-remove:hover { color: var(--danger); }
+
+  /* Parlay Calculator */
+  .parlay-calc { padding: 14px 16px; border-top: 1px solid var(--border); }
+  .calc-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; font-size: 0.85rem; }
+  .calc-label { color: var(--muted); }
+  .calc-value { font-weight: 600; }
+  .wager-row { display: flex; gap: 8px; margin-bottom: 14px; align-items: center; }
+  .wager-label { font-size: 0.85rem; color: var(--muted); white-space: nowrap; }
+  .wager-input { flex: 1; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; color: var(--text); font-size: 0.9rem; text-align: right; }
+  .wager-input:focus { outline: none; border-color: var(--accent); }
+  .payout-box { background: linear-gradient(135deg, #22c55e15, #22c55e05); border: 1px solid #22c55e30; border-radius: 8px; padding: 12px; text-align: center; margin-bottom: 12px; }
+  .payout-label { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .payout-amount { font-size: 1.6rem; font-weight: 800; color: var(--accent2); }
+  .payout-profit { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+
+  /* Loading / Error */
+  .loading { text-align: center; padding: 60px 20px; color: var(--muted); }
+  .spinner { width: 40px; height: 40px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .error-box { background: #ef444410; border: 1px solid #ef444430; border-radius: var(--radius); padding: 20px; text-align: center; color: var(--danger); }
+  .error-box p { font-size: 0.85rem; margin-top: 8px; color: var(--muted); }
+
+  /* Footer */
+  .footer { text-align: center; padding: 20px; color: var(--muted); font-size: 0.78rem; border-top: 1px solid var(--border); margin-top: 20px; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--card2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; font-size: 0.88rem; z-index: 999; transform: translateY(100px); opacity: 0; transition: all 0.3s; box-shadow: 0 8px 32px rgba(0,0,0,0.4); max-width: 280px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: #22c55e40; color: var(--accent2); }
+  .toast.error { border-color: #ef444440; color: var(--danger); }
+
+  /* Stats grid */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 12px; }
+  .stat-box { background: var(--card2); border-radius: 8px; padding: 10px; text-align: center; }
+  .stat-label { font-size: 0.68rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; }
+  .stat-val { font-size: 1.3rem; font-weight: 800; margin-top: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <div class="logo">
+      <span style="font-size:1.5rem">🏀</span>
+      <h1>NBA Parlay Finder</h1>
+    </div>
+    <div class="header-meta">
+      <div class="refresh-info">
+        <div class="live-dot"></div>
+        <span id="lastUpdate">Loading...</span>
+        <span id="countdown" style="margin-left:6px;color:#22c55e;font-weight:700;font-size:0.82rem;"></span>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="loadGames()">↻ Refresh</button>
+      <button class="btn btn-ghost btn-sm" onclick="showKeySetup()">🔑 API Key</button>
+    </div>
+  </div>
+</div>
+
+<!-- Setup Banner -->
+<div id="setupBanner" style="display:none">
+  <div class="setup-wrap">
+    <div class="setup-banner">
+      <h3>🔑 Connect Live NBA Odds</h3>
+      <p>
+        Get a <strong style="color:var(--text)">free API key</strong> at
+        <a href="https://the-odds-api.com/account/keys/" target="_blank" style="color:var(--accent)">the-odds-api.com</a>
+        (500 free requests/month, no credit card needed).<br>
+        Without a key, the site shows realistic demo data that refreshes every session.
+      </p>
+      <div class="key-input-row">
+        <input class="key-input" id="apiKeyInput" type="text" placeholder="Paste your Odds API key here..." />
+        <button class="btn btn-primary" onclick="saveApiKey()">Save &amp; Load Live Odds</button>
+        <button class="btn btn-ghost" onclick="useDemoMode()">Use Demo Data</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="main">
+  <!-- Left: Games -->
+  <div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all', this)">All Markets</button>
+      <button class="filter-btn" onclick="setFilter('moneyline', this)">Moneyline</button>
+      <button class="filter-btn" onclick="setFilter('spread', this)">Spread</button>
+      <button class="filter-btn" onclick="setFilter('totals', this)">Totals</button>
+      <input class="search-box" id="searchBox" placeholder="Search teams..." oninput="renderGames()" />
+      <span class="results-count" id="resultsCount"></span>
+    </div>
+    <div id="gamesContainer">
+      <div class="loading"><div class="spinner"></div>Loading NBA odds...</div>
+    </div>
+  </div>
+
+  <!-- Right: Parlay Builder -->
+  <div class="parlay-panel">
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          🎯 Parlay Builder
+          <div class="leg-count" id="legCount">0</div>
+        </div>
+        <button class="btn btn-ghost btn-sm" onclick="clearParlay()">Clear All</button>
+      </div>
+      <div class="parlay-legs" id="parlayLegs">
+        <div class="empty-state">
+          <div class="empty-icon">🎰</div>
+          <div>Click any odds below<br>to add a leg</div>
+        </div>
+      </div>
+      <div class="parlay-calc" id="parlayCalc" style="display:none">
+        <div class="calc-row">
+          <span class="calc-label">Combined Odds</span>
+          <span class="calc-value" id="combinedOdds">—</span>
+        </div>
+        <div class="calc-row">
+          <span class="calc-label">Implied Probability</span>
+          <span class="calc-value" id="impliedProb">—</span>
+        </div>
+        <div class="wager-row">
+          <span class="wager-label">Wager $</span>
+          <input class="wager-input" id="wagerInput" type="number" value="100" min="1" oninput="calculatePayout()" />
+        </div>
+        <div class="payout-box">
+          <div class="payout-label">Potential Payout</div>
+          <div class="payout-amount" id="payoutAmount">$0.00</div>
+          <div class="payout-profit" id="payoutProfit">Profit: $0.00</div>
+        </div>
+        <button class="btn btn-primary" style="width:100%;padding:12px" onclick="showToast('Parlay saved! 🎯', 'success')">📋 Copy Parlay</button>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <div class="panel-header">
+        <div class="panel-title">📊 Session Stats</div>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-box">
+          <div class="stat-label">Games Today</div>
+          <div class="stat-val" style="color:var(--accent)" id="statGames">—</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Legs Added</div>
+          <div class="stat-val" style="color:var(--gold)" id="statLegs">0</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Best ML Line</div>
+          <div class="stat-val" style="color:var(--accent2);font-size:1rem" id="statBestML">—</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-label">Data Source</div>
+          <div class="stat-val" style="font-size:0.8rem;color:var(--muted)" id="statSource">—</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="footer">
+  🏀 NBA Parlay Finder &nbsp;·&nbsp; Games via ESPN (free) · Odds simulated &nbsp;·&nbsp; For entertainment purposes only &nbsp;·&nbsp; Please gamble responsibly
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════
+//  CONFIG
+// ═══════════════════════════════════════════════════════════
+const ESPN_API     = 'https://site.api.espn.com/apis/site/v2/sports/basketball/nba/scoreboard';
+const ODDS_API_BASE = 'https://api.the-odds-api.com/v4';
+const SPORT        = 'basketball_nba';
+const REGIONS      = 'us';
+const MARKETS      = 'h2h,spreads,totals';
+const REFRESH_MS   = 30 * 1000; // 30 seconds — near-live
+
+let apiKey        = localStorage.getItem('oddsApiKey') || '';
+let gamesData     = [];
+let parlay        = [];
+let currentFilter = 'all';
+let refreshTimer  = null;
+let totalLegsAdded = 0;
+
+// ═══════════════════════════════════════════════════════════
+//  DEMO DATA
+// ═══════════════════════════════════════════════════════════
+const NBA_TEAMS = [
+  { name: 'Boston Celtics',           short: 'BOS', record: '52-18' },
+  { name: 'New York Knicks',          short: 'NYK', record: '47-23' },
+  { name: 'Milwaukee Bucks',          short: 'MIL', record: '44-26' },
+  { name: 'Indiana Pacers',           short: 'IND', record: '41-29' },
+  { name: 'Cleveland Cavaliers',      short: 'CLE', record: '48-22' },
+  { name: 'Orlando Magic',            short: 'ORL', record: '39-31' },
+  { name: 'Philadelphia 76ers',       short: 'PHI', record: '35-35' },
+  { name: 'Miami Heat',               short: 'MIA', record: '38-32' },
+  { name: 'Oklahoma City Thunder',    short: 'OKC', record: '57-13' },
+  { name: 'Denver Nuggets',           short: 'DEN', record: '50-20' },
+  { name: 'Minnesota Timberwolves',   short: 'MIN', record: '49-21' },
+  { name: 'Los Angeles Lakers',       short: 'LAL', record: '42-28' },
+  { name: 'Golden State Warriors',    short: 'GSW', record: '43-27' },
+  { name: 'Phoenix Suns',             short: 'PHX', record: '36-34' },
+  { name: 'Dallas Mavericks',         short: 'DAL', record: '47-23' },
+  { name: 'New Orleans Pelicans',     short: 'NOP', record: '37-33' },
+  { name: 'Memphis Grizzlies',        short: 'MEM', record: '30-40' },
+  { name: 'Sacramento Kings',         short: 'SAC', record: '39-31' },
+];
+
+function generateDemoGames() {
+  // Shuffle teams and pair them up
+  const shuffled = [...NBA_TEAMS].sort(() => Math.random() - 0.5);
+  const count = 6 + Math.floor(Math.random() * 4); // 6–9 games
+  const games = [];
+  const now = new Date();
+
+  for (let i = 0; i < Math.min(count, Math.floor(shuffled.length / 2)); i++) {
+    const home = shuffled[i * 2];
+    const away = shuffled[i * 2 + 1];
+
+    const spread = parseFloat((Math.random() * 12 - 6).toFixed(1));
+    const total  = parseFloat((212 + Math.random() * 22).toFixed(1));
+
+    // Moneyline logic: bigger spread = bigger favourite price
+    const absSpread = Math.abs(spread);
+    const favML  = -(105 + absSpread * 9 + Math.random() * 15);
+    const dogML  =   95 + absSpread * 9 + Math.random() * 15;
+    const homeML = spread < 0 ? favML : dogML;
+    const awayML = spread < 0 ? dogML : favML;
+
+    // Game time: today between 6pm–10pm ET, staggered
+    const gt = new Date(now);
+    gt.setHours(18 + Math.floor(i * 0.6), [0, 30][i % 2], 0, 0);
+
+    games.push({
+      id: `demo_${i}_${Date.now()}`,
+      homeTeam: home,
+      awayTeam: away,
+      commenceTime: gt.toISOString(),
+      bookmaker: 'FanDuel',
+      markets: {
+        h2h:     { home: Math.round(homeML),  away: Math.round(awayML) },
+        spreads: { home: spread, away: -spread, homeOdds: -110, awayOdds: -110 },
+        totals:  {
+          point:    total,
+          overOdds:  -110 + Math.round(Math.random() * 10 - 5),
+          underOdds: -110 + Math.round(Math.random() * 10 - 5),
+        },
+      },
+    });
+  }
+  return games;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LIVE API FETCH
+// ═══════════════════════════════════════════════════════════
+async function fetchLiveOdds() {
+  const url = `${ODDS_API_BASE}/sports/${SPORT}/odds/?apiKey=${apiKey}&regions=${REGIONS}&markets=${MARKETS}&oddsFormat=american`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`API ${res.status}: ${text}`);
+  }
+  const data = await res.json();
+
+  return data.map(game => {
+    const bk = game.bookmakers[0] || {};
+    const markets = {};
+    (bk.markets || []).forEach(m => {
+      if (m.key === 'h2h') {
+        const hm = m.outcomes.find(o => o.name === game.home_team);
+        const aw = m.outcomes.find(o => o.name === game.away_team);
+        markets.h2h = { home: hm?.price, away: aw?.price };
+      }
+      if (m.key === 'spreads') {
+        const hm = m.outcomes.find(o => o.name === game.home_team);
+        const aw = m.outcomes.find(o => o.name === game.away_team);
+        markets.spreads = { home: hm?.point, away: aw?.point, homeOdds: hm?.price, awayOdds: aw?.price };
+      }
+      if (m.key === 'totals') {
+        const ov = m.outcomes.find(o => o.name === 'Over');
+        const un = m.outcomes.find(o => o.name === 'Under');
+        markets.totals = { point: ov?.point, overOdds: ov?.price, underOdds: un?.price };
+      }
+    });
+    return {
+      id: game.id,
+      homeTeam: { name: game.home_team, short: abbr(game.home_team) },
+      awayTeam: { name: game.away_team, short: abbr(game.away_team) },
+      commenceTime: game.commence_time,
+      bookmaker: bk.title || 'Odds',
+      markets,
+    };
+  });
+}
+
+function abbr(name) {
+  const known = { 'Boston Celtics':'BOS','New York Knicks':'NYK','Milwaukee Bucks':'MIL','Indiana Pacers':'IND','Cleveland Cavaliers':'CLE','Orlando Magic':'ORL','Philadelphia 76ers':'PHI','Miami Heat':'MIA','Oklahoma City Thunder':'OKC','Denver Nuggets':'DEN','Minnesota Timberwolves':'MIN','Los Angeles Lakers':'LAL','Los Angeles Clippers':'LAC','Golden State Warriors':'GSW','Phoenix Suns':'PHX','Dallas Mavericks':'DAL','New Orleans Pelicans':'NOP','Memphis Grizzlies':'MEM','Sacramento Kings':'SAC','Atlanta Hawks':'ATL','Chicago Bulls':'CHI','Detroit Pistons':'DET','Charlotte Hornets':'CHA','Washington Wizards':'WAS','Toronto Raptors':'TOR','Brooklyn Nets':'BKN','Houston Rockets':'HOU','San Antonio Spurs':'SAS','Utah Jazz':'UTA','Portland Trail Blazers':'POR' };
+  return known[name] || name.split(' ').pop().slice(0,3).toUpperCase();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  ESPN FREE API FETCH — real games, no key needed
+// ═══════════════════════════════════════════════════════════
+async function fetchESPNGames() {
+  const res = await fetch(ESPN_API);
+  if (!res.ok) throw new Error(`ESPN API ${res.status}`);
+  const data = await res.json();
+  const events = data.events || [];
+  if (events.length === 0) return null; // off-season or no games today
+
+  return events.map(ev => {
+    const comp   = ev.competitions[0];
+    const home   = comp.competitors.find(c => c.homeAway === 'home');
+    const away   = comp.competitors.find(c => c.homeAway === 'away');
+    const homeName = home.team.displayName;
+    const awayName = away.team.displayName;
+
+    // Generate realistic odds based on team records/seeds if available
+    const homeWins = parseInt(home.records?.[0]?.summary?.split('-')[0]) || 40;
+    const awayWins = parseInt(away.records?.[0]?.summary?.split('-')[0]) || 40;
+    const diff     = homeWins - awayWins;
+    // Home court advantage ~3 pts, adjust for win differential
+    const spread   = parseFloat((-(3 + diff * 0.15 + (Math.random() * 2 - 1)).toFixed(1)));
+    const absSpread = Math.abs(spread);
+    const favML    = -(105 + absSpread * 9 + Math.random() * 12);
+    const dogML    =   95 + absSpread * 9 + Math.random() * 12;
+    const homeML   = spread < 0 ? favML : dogML;
+    const awayML   = spread < 0 ? dogML : favML;
+    const total    = parseFloat((218 + Math.random() * 18).toFixed(1));
+
+    return {
+      id: ev.id,
+      homeTeam: { name: homeName, short: home.team.abbreviation || abbr(homeName), record: home.records?.[0]?.summary || '' },
+      awayTeam: { name: awayName, short: away.team.abbreviation || abbr(awayName), record: away.records?.[0]?.summary || '' },
+      commenceTime: ev.date,
+      bookmaker: 'Consensus',
+      status: comp.status?.type?.description || '',
+      markets: {
+        h2h:     { home: Math.round(homeML),  away: Math.round(awayML) },
+        spreads: { home: spread, away: -spread, homeOdds: -110, awayOdds: -110 },
+        totals:  { point: total, overOdds: -110 + Math.round(Math.random()*10-5), underOdds: -110 + Math.round(Math.random()*10-5) },
+      },
+    };
+  });
+}
+
+// ═══════════════════════════════════════════════════════════
+//  LOAD GAMES
+// ═══════════════════════════════════════════════════════════
+async function loadGames() {
+  document.getElementById('gamesContainer').innerHTML =
+    '<div class="loading"><div class="spinner"></div>Loading NBA odds...</div>';
+
+  try {
+    if (apiKey) {
+      gamesData = await fetchLiveOdds();
+      document.getElementById('lastUpdate').textContent = 'Live · ' + fmtTime(new Date());
+      document.getElementById('statSource').textContent = 'Live Odds API';
+    } else {
+      // Try ESPN free API first — real games, simulated odds
+      const espnGames = await fetchESPNGames().catch(() => null);
+      if (espnGames && espnGames.length > 0) {
+        gamesData = espnGames;
+        document.getElementById('lastUpdate').textContent = 'ESPN · ' + fmtTime(new Date());
+        document.getElementById('statSource').textContent = 'ESPN (free)';
+      } else {
+        gamesData = generateDemoGames();
+        document.getElementById('lastUpdate').textContent = 'Demo · ' + fmtTime(new Date());
+        document.getElementById('statSource').textContent = 'Demo';
+      }
+    }
+
+    document.getElementById('statGames').textContent = gamesData.length;
+    updateBestML();
+    renderGames();
+    scheduleRefresh();
+  } catch (err) {
+    console.error(err);
+    document.getElementById('gamesContainer').innerHTML = `
+      <div class="error-box">
+        <strong>⚠️ Could not load live odds</strong>
+        <p>${err.message}</p>
+        <p style="margin-top:12px">
+          <button class="btn btn-ghost btn-sm" onclick="useDemoMode()" style="margin-right:8px">Use Demo Data</button>
+          <button class="btn btn-ghost btn-sm" onclick="showKeySetup()">Update API Key</button>
+        </p>
+      </div>`;
+  }
+}
+
+let countdownTimer = null;
+let countdownSec = REFRESH_MS / 1000;
+
+function scheduleRefresh() {
+  if (refreshTimer) clearTimeout(refreshTimer);
+  if (countdownTimer) clearInterval(countdownTimer);
+  countdownSec = REFRESH_MS / 1000;
+  refreshTimer = setTimeout(loadGames, REFRESH_MS);
+  countdownTimer = setInterval(() => {
+    countdownSec--;
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = countdownSec > 0 ? `↻ ${countdownSec}s` : '↻ now';
+    if (countdownSec <= 0) clearInterval(countdownTimer);
+  }, 1000);
+}
+
+function updateBestML() {
+  let best = null;
+  gamesData.forEach(g => {
+    const h = g.markets?.h2h;
+    if (!h) return;
+    [h.home, h.away].forEach(o => {
+      if (o > 0 && (best === null || o > best)) best = o;
+    });
+  });
+  document.getElementById('statBestML').textContent = best ? '+' + best : '—';
+}
+
+// ═══════════════════════════════════════════════════════════
+//  RENDER GAMES
+// ═══════════════════════════════════════════════════════════
+function renderGames() {
+  const container = document.getElementById('gamesContainer');
+  const search    = (document.getElementById('searchBox')?.value || '').toLowerCase();
+
+  const games = gamesData.filter(g =>
+    g.homeTeam.name.toLowerCase().includes(search) ||
+    g.awayTeam.name.toLowerCase().includes(search)
+  );
+
+  document.getElementById('resultsCount').textContent =
+    `${games.length} game${games.length !== 1 ? 's' : ''}`;
+
+  if (games.length === 0) {
+    container.innerHTML = '<div class="empty-state" style="padding:60px 20px"><div class="empty-icon">🔍</div><div>No games found</div></div>';
+    return;
+  }
+
+  container.innerHTML = games.map(renderCard).join('');
+}
+
+function renderCard(game) {
+  const m    = game.markets || {};
+  const h2h  = m.h2h     || {};
+  const sp   = m.spreads  || {};
+  const tot  = m.totals   || {};
+  const home = game.homeTeam;
+  const away = game.awayTeam;
+  const time = new Date(game.commenceTime);
+
+  const showML = currentFilter === 'all' || currentFilter === 'moneyline';
+  const showSP = currentFilter === 'all' || currentFilter === 'spread';
+  const showTT = currentFilter === 'all' || currentFilter === 'totals';
+
+  const sel = id => parlay.some(p => p.id === id) ? 'selected' : '';
+
+  const idBase = game.id;
+  const ids = {
+    mlH:  `${idBase}|ml|home`,
+    mlA:  `${idBase}|ml|away`,
+    spH:  `${idBase}|sp|home`,
+    spA:  `${idBase}|sp|away`,
+    totO: `${idBase}|tot|over`,
+    totU: `${idBase}|tot|under`,
+  };
+
+  const fmtSp = v => v === undefined ? '—' : (v > 0 ? '+' + v : '' + v);
+
+  const columns = [];
+  if (showML && h2h.home !== undefined) columns.push(`
+    <div class="odds-col">
+      <div class="odds-label">Moneyline</div>
+      <div class="odds-row">
+        <button class="odds-btn ${sel(ids.mlA)}" id="${ids.mlA}"
+          onclick="toggleLeg('${ids.mlA}','${esc(away.name)}','Moneyline',${h2h.away},'${idBase}','ml')">
+          <div class="team-short">${away.short}</div>
+          <div class="odds-value ${h2h.away > 0 ? 'pos' : ''}">${fmtOdds(h2h.away)}</div>
+        </button>
+        <button class="odds-btn ${sel(ids.mlH)}" id="${ids.mlH}"
+          onclick="toggleLeg('${ids.mlH}','${esc(home.name)}','Moneyline',${h2h.home},'${idBase}','ml')">
+          <div class="team-short">${home.short}</div>
+          <div class="odds-value ${h2h.home > 0 ? 'pos' : ''}">${fmtOdds(h2h.home)}</div>
+        </button>
+      </div>
+    </div>`);
+
+  if (showSP && sp.home !== undefined) columns.push(`
+    <div class="odds-col">
+      <div class="odds-label">Spread</div>
+      <div class="odds-row">
+        <button class="odds-btn ${sel(ids.spA)}" id="${ids.spA}"
+          onclick="toggleLeg('${ids.spA}','${esc(away.name)} ${fmtSp(sp.away)}','Spread',${sp.awayOdds},'${idBase}','sp')">
+          <div class="team-short">${away.short} ${fmtSp(sp.away)}</div>
+          <div class="odds-value">${fmtOdds(sp.awayOdds)}</div>
+        </button>
+        <button class="odds-btn ${sel(ids.spH)}" id="${ids.spH}"
+          onclick="toggleLeg('${ids.spH}','${esc(home.name)} ${fmtSp(sp.home)}','Spread',${sp.homeOdds},'${idBase}','sp')">
+          <div class="team-short">${home.short} ${fmtSp(sp.home)}</div>
+          <div class="odds-value">${fmtOdds(sp.homeOdds)}</div>
+        </button>
+      </div>
+    </div>`);
+
+  if (showTT && tot.point !== undefined) columns.push(`
+    <div class="odds-col">
+      <div class="odds-label">Total ${tot.point}</div>
+      <div class="odds-row">
+        <button class="odds-btn ${sel(ids.totO)}" id="${ids.totO}"
+          onclick="toggleLeg('${ids.totO}','Over ${tot.point}','Total O/U',${tot.overOdds},'${idBase}','tot')">
+          <div class="team-short">OVER</div>
+          <div class="odds-value">${fmtOdds(tot.overOdds)}</div>
+        </button>
+        <button class="odds-btn ${sel(ids.totU)}" id="${ids.totU}"
+          onclick="toggleLeg('${ids.totU}','Under ${tot.point}','Total O/U',${tot.underOdds},'${idBase}','tot')">
+          <div class="team-short">UNDER</div>
+          <div class="odds-value">${fmtOdds(tot.underOdds)}</div>
+        </button>
+      </div>
+    </div>`);
+
+  if (columns.length === 0) return '';
+
+  const colCount = columns.length;
+
+  return `
+    <div class="game-card">
+      <div class="game-header">
+        <span class="game-time">🕐 ${fmtGameTime(time)}</span>
+        <span class="game-league">NBA · ${game.bookmaker}</span>
+      </div>
+      <div class="teams-row">
+        <div class="team">
+          <div class="team-name">${away.name}</div>
+          ${away.record ? `<div class="team-record">${away.record}</div>` : ''}
+        </div>
+        <div class="vs-badge">@</div>
+        <div class="team" style="text-align:right">
+          <div class="team-name">${home.name}</div>
+          ${home.record ? `<div class="team-record">${home.record}</div>` : ''}
+        </div>
+      </div>
+      <div class="odds-grid" style="grid-template-columns:repeat(${colCount},1fr)">
+        ${columns.join('')}
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+//  PARLAY LOGIC
+// ═══════════════════════════════════════════════════════════
+function toggleLeg(id, pick, type, odds, gameId, market) {
+  const existIdx = parlay.findIndex(p => p.id === id);
+  if (existIdx >= 0) {
+    // Deselect
+    parlay.splice(existIdx, 1);
+  } else {
+    if (parlay.length >= 12) { showToast('Max 12 legs per parlay', 'error'); return; }
+    // Remove conflicting pick from same game + same market
+    const conflictPrefix = `${gameId}|${market}`;
+    parlay = parlay.filter(p => !p.id.startsWith(conflictPrefix));
+    parlay.push({ id, pick, type, odds, gameId });
+    totalLegsAdded++;
+    document.getElementById('statLegs').textContent = totalLegsAdded;
+    showToast(`Added: ${pick} (${fmtOdds(odds)})`, 'success');
+  }
+  renderParlay();
+  renderGames();
+}
+
+function removeLeg(id) {
+  parlay = parlay.filter(p => p.id !== id);
+  renderParlay();
+  renderGames();
+}
+
+function clearParlay() {
+  parlay = [];
+  renderParlay();
+  renderGames();
+}
+
+function renderParlay() {
+  const legsDiv  = document.getElementById('parlayLegs');
+  const calcDiv  = document.getElementById('parlayCalc');
+  const countDiv = document.getElementById('legCount');
+
+  countDiv.textContent = parlay.length;
+
+  if (parlay.length === 0) {
+    legsDiv.innerHTML = `<div class="empty-state"><div class="empty-icon">🎰</div><div>Click any odds below<br>to add a leg</div></div>`;
+    calcDiv.style.display = 'none';
+    return;
+  }
+
+  legsDiv.innerHTML = parlay.map(leg => `
+    <div class="parlay-leg">
+      <div class="leg-info">
+        <div class="leg-pick">${leg.pick}</div>
+        <div class="leg-type">${leg.type}</div>
+      </div>
+      <div class="leg-odds">${fmtOdds(leg.odds)}</div>
+      <button class="leg-remove" onclick="removeLeg('${leg.id}')">✕</button>
+    </div>`).join('');
+
+  calcDiv.style.display = 'block';
+  calculatePayout();
+}
+
+function calculatePayout() {
+  if (parlay.length === 0) return;
+
+  const combinedDec = parlay.reduce((acc, leg) => acc * americanToDec(leg.odds), 1);
+  const combinedAm  = decToAmerican(combinedDec);
+  const impliedProb = (1 / combinedDec * 100).toFixed(1);
+  const wager       = parseFloat(document.getElementById('wagerInput').value) || 0;
+  const payout      = wager * combinedDec;
+  const profit      = payout - wager;
+
+  document.getElementById('combinedOdds').textContent = fmtOdds(Math.round(combinedAm));
+  document.getElementById('impliedProb').textContent  = impliedProb + '%';
+  document.getElementById('payoutAmount').textContent = '$' + payout.toFixed(2);
+  document.getElementById('payoutProfit').textContent = 'Profit: $' + profit.toFixed(2);
+}
+
+function americanToDec(o) { return o > 0 ? 1 + o / 100 : 1 + 100 / Math.abs(o); }
+function decToAmerican(d) { return d >= 2 ? (d - 1) * 100 : -100 / (d - 1); }
+
+// ═══════════════════════════════════════════════════════════
+//  FILTERS
+// ═══════════════════════════════════════════════════════════
+function setFilter(f, btn) {
+  currentFilter = f;
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderGames();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  API KEY MANAGEMENT
+// ═══════════════════════════════════════════════════════════
+function showKeySetup() {
+  const banner = document.getElementById('setupBanner');
+  banner.style.display = banner.style.display === 'none' ? 'block' : 'none';
+  if (apiKey) document.getElementById('apiKeyInput').value = apiKey;
+}
+
+function saveApiKey() {
+  const key = document.getElementById('apiKeyInput').value.trim();
+  if (!key) { showToast('Please enter a key', 'error'); return; }
+  apiKey = key;
+  localStorage.setItem('oddsApiKey', key);
+  document.getElementById('setupBanner').style.display = 'none';
+  loadGames();
+}
+
+function useDemoMode() {
+  apiKey = '';
+  localStorage.removeItem('oddsApiKey');
+  document.getElementById('setupBanner').style.display = 'none';
+  loadGames();
+}
+
+// ═══════════════════════════════════════════════════════════
+//  UTILITIES
+// ═══════════════════════════════════════════════════════════
+function fmtOdds(o) {
+  if (o === undefined || o === null) return '—';
+  return o > 0 ? '+' + o : '' + o;
+}
+function fmtTime(d) {
+  return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+function fmtGameTime(d) {
+  const today = new Date();
+  const isToday = d.toDateString() === today.toDateString();
+  if (isToday) return 'Today · ' + fmtTime(d);
+  return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' }) + ' · ' + fmtTime(d);
+}
+function esc(s) { return (s || '').replace(/\\/g, '\\\\').replace(/'/g, "\\'"); }
+
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast ' + type;
+  void t.offsetWidth; // reflow
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ═══════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+  if (!apiKey) {
+    document.getElementById('setupBanner').style.display = 'block';
+  }
+  loadGames();
+});
+</script>
+</body>
+</html>
