@@ -1,0 +1,1100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StreamMarkets — Live Prediction Markets</title>
+<style>
+  :root {
+    --twitch: #9146FF;
+    --twitch-dark: #772CE8;
+    --twitch-light: #BF94FF;
+    --bg: #0E0E10;
+    --bg2: #18181B;
+    --bg3: #1F1F23;
+    --bg4: #26262C;
+    --border: #2E2E35;
+    --text: #EFEFF1;
+    --text2: #ADADB8;
+    --text3: #6E6E80;
+    --yes: #00C65E;
+    --yes-dark: #009E4A;
+    --no: #FF4040;
+    --no-dark: #CC2222;
+    --gold: #FFD700;
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 52px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex; align-items: center; gap: 8px;
+    font-weight: 800; font-size: 16px; letter-spacing: -0.3px;
+  }
+  .logo-icon {
+    width: 28px; height: 28px;
+    background: var(--twitch);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+  }
+  .logo span { color: var(--twitch-light); }
+  .live-badge {
+    background: #E91916;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+    animation: pulse-live 2s infinite;
+  }
+  @keyframes pulse-live {
+    0%,100% { opacity: 1; }
+    50% { opacity: 0.6; }
+  }
+  .streamer-info {
+    margin-left: auto;
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--text2);
+  }
+  .streamer-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #9146FF, #3BC8F5);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: white;
+  }
+  .coin-balance {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex; align-items: center; gap: 5px;
+    font-weight: 600;
+    color: var(--gold);
+    font-size: 13px;
+  }
+  .coin-balance::before { content: '🪙'; font-size: 13px; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    gap: 4px;
+  }
+  .tab {
+    padding: 12px 16px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--text3);
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .tab:hover { color: var(--text2); }
+  .tab.active {
+    color: var(--twitch-light);
+    border-bottom-color: var(--twitch);
+  }
+
+  /* ── LAYOUT ── */
+  .view { display: none; padding: 16px; max-width: 900px; margin: 0 auto; }
+  .view.active { display: block; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-bottom: 12px;
+  }
+  .card-header {
+    display: flex; align-items: flex-start; justify-content: space-between;
+    gap: 10px; margin-bottom: 12px;
+  }
+  .card-title { font-weight: 700; font-size: 15px; line-height: 1.3; }
+  .card-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .tag {
+    font-size: 11px;
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-weight: 600;
+    background: var(--bg3);
+    color: var(--text2);
+    border: 1px solid var(--border);
+  }
+  .tag.live { background: rgba(233,25,22,0.15); color: #FF6B6B; border-color: rgba(233,25,22,0.3); }
+  .tag.resolved { background: rgba(0,198,94,0.12); color: var(--yes); border-color: rgba(0,198,94,0.25); }
+  .tag.category { background: rgba(145,70,255,0.15); color: var(--twitch-light); border-color: rgba(145,70,255,0.3); }
+
+  /* ── ODDS BAR ── */
+  .odds-bar-wrap { margin: 12px 0 8px; }
+  .odds-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bg3);
+    overflow: hidden;
+    position: relative;
+  }
+  .odds-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--yes), #00E676);
+    border-radius: 4px;
+    transition: width 0.5s cubic-bezier(0.4,0,0.2,1);
+  }
+  .odds-labels {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 6px;
+  }
+  .odds-yes { color: var(--yes); font-weight: 700; font-size: 18px; }
+  .odds-no { color: var(--no); font-weight: 700; font-size: 18px; }
+  .odds-payout { color: var(--text3); font-size: 11px; margin-top: 1px; }
+
+  /* ── BET BUTTONS ── */
+  .bet-row {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 10px;
+  }
+  .bet-btn {
+    border: none; border-radius: var(--radius-sm);
+    padding: 10px 12px; cursor: pointer;
+    font-weight: 700; font-size: 13px;
+    transition: all 0.15s; display: flex; flex-direction: column;
+    align-items: center; gap: 2px;
+    position: relative; overflow: hidden;
+  }
+  .bet-btn::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: white; opacity: 0;
+    transition: opacity 0.1s;
+  }
+  .bet-btn:active::after { opacity: 0.1; }
+  .bet-btn-yes {
+    background: rgba(0,198,94,0.15);
+    border: 1.5px solid rgba(0,198,94,0.4);
+    color: var(--yes);
+  }
+  .bet-btn-yes:hover {
+    background: rgba(0,198,94,0.25);
+    border-color: var(--yes);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,198,94,0.2);
+  }
+  .bet-btn-no {
+    background: rgba(255,64,64,0.12);
+    border: 1.5px solid rgba(255,64,64,0.3);
+    color: var(--no);
+  }
+  .bet-btn-no:hover {
+    background: rgba(255,64,64,0.22);
+    border-color: var(--no);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255,64,64,0.2);
+  }
+  .bet-btn .btn-label { font-size: 13px; font-weight: 800; }
+  .bet-btn .btn-odds { font-size: 11px; opacity: 0.8; }
+  .bet-btn .btn-payout { font-size: 10px; opacity: 0.65; }
+  .bet-btn.has-position { border-width: 2px; }
+  .bet-btn-yes.has-position { border-color: var(--yes); box-shadow: 0 0 0 1px rgba(0,198,94,0.3) inset; }
+  .bet-btn-no.has-position { border-color: var(--no); box-shadow: 0 0 0 1px rgba(255,64,64,0.3) inset; }
+
+  /* ── BET AMOUNT ── */
+  .bet-amount-row {
+    display: flex; gap: 6px; margin-top: 8px; align-items: center;
+  }
+  .bet-input-wrap {
+    flex: 1; display: flex; align-items: center;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); overflow: hidden;
+    transition: border-color 0.15s;
+  }
+  .bet-input-wrap:focus-within { border-color: var(--twitch); }
+  .bet-input-prefix {
+    padding: 0 8px; color: var(--gold); font-size: 13px; font-weight: 600;
+    border-right: 1px solid var(--border);
+  }
+  .bet-input {
+    background: none; border: none; outline: none;
+    color: var(--text); font-size: 14px; font-weight: 600;
+    padding: 8px 10px; width: 100%;
+  }
+  .quick-amounts { display: flex; gap: 4px; }
+  .quick-btn {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text2); font-size: 11px; font-weight: 600;
+    padding: 4px 8px; border-radius: 6px; cursor: pointer;
+    transition: all 0.12s;
+  }
+  .quick-btn:hover { border-color: var(--twitch); color: var(--twitch-light); }
+
+  /* ── POSITION BADGE ── */
+  .position-badge {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: 6px; padding: 5px 10px; margin-top: 8px;
+    font-size: 12px;
+  }
+  .position-badge .pos-side { font-weight: 700; }
+  .position-badge .pos-side.yes { color: var(--yes); }
+  .position-badge .pos-side.no { color: var(--no); }
+  .position-badge .pos-amount { color: var(--text2); }
+  .position-badge .pos-pnl { margin-left: auto; font-weight: 700; }
+  .position-badge .pos-pnl.green { color: var(--yes); }
+  .position-badge .pos-pnl.red { color: var(--no); }
+
+  /* ── VOLUME / TIMER ── */
+  .market-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 12px; color: var(--text3);
+  }
+  .vol-item { display: flex; align-items: center; gap: 4px; }
+  .timer { font-variant-numeric: tabular-nums; font-weight: 600; color: var(--text2); }
+  .timer.urgent { color: #FF9A00; animation: pulse-timer 1s infinite; }
+  @keyframes pulse-timer { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  /* ── ODDS FLASH ── */
+  @keyframes flash-yes { 0%{background:rgba(0,198,94,0.3)} 100%{background:transparent} }
+  @keyframes flash-no { 0%{background:rgba(255,64,64,0.2)} 100%{background:transparent} }
+  .flash-yes { animation: flash-yes 0.6s ease-out; }
+  .flash-no { animation: flash-no 0.6s ease-out; }
+
+  /* ── STREAMER DASHBOARD ── */
+  .section-title {
+    font-size: 16px; font-weight: 800; margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .count {
+    background: var(--twitch); color: white;
+    font-size: 11px; padding: 2px 7px; border-radius: 20px;
+  }
+  .create-form { display: flex; flex-direction: column; gap: 10px; }
+  .form-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .form-group { display: flex; flex-direction: column; gap: 5px; flex: 1; min-width: 140px; }
+  .form-label { font-size: 12px; font-weight: 600; color: var(--text2); }
+  .form-input, .form-select {
+    background: var(--bg3); border: 1px solid var(--border);
+    color: var(--text); font-size: 14px;
+    padding: 9px 12px; border-radius: var(--radius-sm);
+    outline: none; transition: border-color 0.15s;
+    width: 100%;
+  }
+  .form-input:focus, .form-select:focus { border-color: var(--twitch); }
+  .form-select option { background: var(--bg3); }
+  .btn-primary {
+    background: var(--twitch); color: white;
+    border: none; border-radius: var(--radius-sm);
+    padding: 10px 18px; font-size: 14px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .btn-primary:hover { background: var(--twitch-dark); transform: translateY(-1px); box-shadow: 0 4px 12px rgba(145,70,255,0.4); }
+  .btn-resolve {
+    background: rgba(0,198,94,0.12);
+    border: 1.5px solid rgba(0,198,94,0.35);
+    color: var(--yes); border-radius: var(--radius-sm);
+    padding: 6px 12px; font-size: 12px; font-weight: 700;
+    cursor: pointer; transition: all 0.15s;
+  }
+  .btn-resolve:hover { background: rgba(0,198,94,0.22); }
+
+  /* ── DASHBOARD CARDS ── */
+  .market-dash-card {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    margin-bottom: 10px;
+  }
+  .market-dash-header {
+    padding: 12px 14px 10px;
+    display: flex; gap: 10px; align-items: flex-start;
+    border-bottom: 1px solid var(--border);
+  }
+  .market-dash-body { padding: 10px 14px 12px; }
+  .stat-row {
+    display: flex; gap: 14px; flex-wrap: wrap;
+    font-size: 12px; color: var(--text2);
+  }
+  .stat { display: flex; flex-direction: column; gap: 2px; }
+  .stat-val { font-size: 16px; font-weight: 700; color: var(--text); }
+  .stat-val.yes-col { color: var(--yes); }
+  .stat-val.no-col { color: var(--no); }
+  .dash-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+  /* ── PORTFOLIO ── */
+  .portfolio-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    margin-bottom: 16px;
+  }
+  .pstat {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 12px;
+    text-align: center;
+  }
+  .pstat-val { font-size: 20px; font-weight: 800; color: var(--text); }
+  .pstat-label { font-size: 11px; color: var(--text3); margin-top: 3px; }
+  .pstat-val.green { color: var(--yes); }
+  .pstat-val.red { color: var(--no); }
+  .pstat-val.gold { color: var(--gold); }
+
+  /* ── ACTIVITY FEED ── */
+  .feed {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); overflow: hidden;
+    max-height: 200px;
+  }
+  .feed-header {
+    padding: 10px 14px; border-bottom: 1px solid var(--border);
+    font-size: 12px; font-weight: 700; color: var(--text2);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .feed-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--yes); animation: pulse-live 1.5s infinite; }
+  .feed-list { overflow-y: auto; max-height: 150px; }
+  .feed-item {
+    padding: 7px 14px; font-size: 12px; color: var(--text2);
+    border-bottom: 1px solid var(--border);
+    display: flex; gap: 8px; align-items: center;
+    animation: slide-in 0.3s ease-out;
+  }
+  .feed-item:last-child { border-bottom: none; }
+  @keyframes slide-in { from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:translateY(0)} }
+  .feed-side { font-weight: 700; }
+  .feed-side.yes { color: var(--yes); }
+  .feed-side.no { color: var(--no); }
+  .feed-amount { color: var(--gold); font-weight: 600; }
+  .feed-time { margin-left: auto; color: var(--text3); font-size: 11px; white-space: nowrap; }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--text3); }
+
+  /* ── TOAST ── */
+  .toast-container { position: fixed; bottom: 20px; right: 20px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+  .toast {
+    background: var(--bg3); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 10px 14px;
+    font-size: 13px; font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    animation: toast-in 0.25s ease-out;
+    display: flex; align-items: center; gap: 8px;
+    max-width: 300px;
+  }
+  @keyframes toast-in { from{opacity:0;transform:translateX(20px)} to{opacity:1;transform:translateX(0)} }
+  .toast-out { animation: toast-out 0.25s ease-in forwards; }
+  @keyframes toast-out { to{opacity:0;transform:translateX(20px)} }
+  .toast.success { border-left: 3px solid var(--yes); }
+  .toast.error { border-left: 3px solid var(--no); }
+  .toast.info { border-left: 3px solid var(--twitch); }
+
+  /* ── RESOLVE MODAL ── */
+  .modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(0,0,0,0.75); z-index: 200;
+    align-items: center; justify-content: center;
+    backdrop-filter: blur(4px);
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 24px; width: 340px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+    animation: modal-in 0.2s ease-out;
+  }
+  @keyframes modal-in { from{opacity:0;transform:scale(0.95)} to{opacity:1;transform:scale(1)} }
+  .modal-title { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+  .modal-q { color: var(--text2); font-size: 13px; margin-bottom: 18px; line-height: 1.4; }
+  .modal-actions { display: flex; flex-direction: column; gap: 8px; }
+  .modal-btn {
+    padding: 11px; border-radius: var(--radius-sm);
+    font-size: 14px; font-weight: 700; cursor: pointer;
+    border: none; transition: all 0.15s;
+  }
+  .modal-btn-yes { background: var(--yes); color: #000; }
+  .modal-btn-yes:hover { background: var(--yes-dark); transform: translateY(-1px); }
+  .modal-btn-no { background: var(--no); color: white; }
+  .modal-btn-no:hover { background: var(--no-dark); transform: translateY(-1px); }
+  .modal-btn-cancel { background: var(--bg3); color: var(--text2); border: 1px solid var(--border); }
+  .modal-btn-cancel:hover { border-color: var(--text3); color: var(--text); }
+
+  /* ── EMPTY STATE ── */
+  .empty {
+    text-align: center; padding: 40px 20px; color: var(--text3);
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 10px; }
+
+  /* ── FILTER CHIPS ── */
+  .filter-row { display: flex; gap: 8px; margin-bottom: 14px; flex-wrap: wrap; }
+  .filter-chip {
+    padding: 5px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;
+    cursor: pointer; border: 1px solid var(--border);
+    background: var(--bg3); color: var(--text2); transition: all 0.12s;
+  }
+  .filter-chip.active, .filter-chip:hover {
+    background: rgba(145,70,255,0.2); border-color: var(--twitch);
+    color: var(--twitch-light);
+  }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 600px) {
+    .streamer-info .streamer-name { display: none; }
+    .portfolio-stats { grid-template-columns: 1fr 1fr; }
+    .odds-yes, .odds-no { font-size: 16px; }
+    .form-row { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo">
+    <div class="logo-icon">📈</div>
+    <span>Stream</span>Markets
+  </div>
+  <div class="live-badge">LIVE</div>
+  <div class="streamer-info">
+    <div class="coin-balance" id="balanceDisplay">5,000</div>
+    <div class="streamer-avatar">DA</div>
+    <span class="streamer-name" style="color:var(--text2);font-size:13px">davisadams</span>
+  </div>
+</header>
+
+<!-- TABS -->
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('viewer')">🎲 Bet Markets</div>
+  <div class="tab" onclick="switchTab('dashboard')">🎮 Streamer Dashboard</div>
+  <div class="tab" onclick="switchTab('portfolio')">💼 My Portfolio</div>
+</div>
+
+<!-- ═══════════════ VIEWER VIEW ═══════════════ -->
+<div id="tab-viewer" class="view active">
+  <div class="filter-row">
+    <div class="filter-chip active" onclick="filterMarkets(this,'all')">All Markets</div>
+    <div class="filter-chip" onclick="filterMarkets(this,'kills')">🎯 Kills</div>
+    <div class="filter-chip" onclick="filterMarkets(this,'chat')">💬 Chat</div>
+    <div class="filter-chip" onclick="filterMarkets(this,'game')">🎮 Game</div>
+    <div class="filter-chip" onclick="filterMarkets(this,'meta')">😤 Meta</div>
+  </div>
+  <div id="viewer-markets"></div>
+</div>
+
+<!-- ═══════════════ STREAMER DASHBOARD ═══════════════ -->
+<div id="tab-dashboard" class="view">
+  <div class="card" style="border-color: rgba(145,70,255,0.4); background: linear-gradient(135deg, var(--bg2), rgba(145,70,255,0.05));">
+    <div class="section-title">✨ Create New Market</div>
+    <div class="create-form">
+      <div class="form-group">
+        <div class="form-label">Market Question</div>
+        <input class="form-input" id="newQuestion" placeholder="Will the streamer get 20+ kills this session?" />
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <div class="form-label">Starting YES% (1–99)</div>
+          <input class="form-input" id="newYesOdds" type="number" min="1" max="99" value="50" />
+        </div>
+        <div class="form-group">
+          <div class="form-label">Expiry</div>
+          <select class="form-select" id="newExpiry">
+            <option value="stream">End of stream</option>
+            <option value="30min">30 minutes</option>
+            <option value="1hr">1 hour</option>
+            <option value="2hr">2 hours</option>
+            <option value="manual">Manual resolve</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <div class="form-label">Category</div>
+          <select class="form-select" id="newCategory">
+            <option value="kills">🎯 Kills</option>
+            <option value="chat">💬 Chat</option>
+            <option value="game">🎮 Game</option>
+            <option value="meta">😤 Meta</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <button class="btn-primary" onclick="createMarket()">🚀 Launch Market</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-title">
+    🔥 Active Markets
+    <span class="count" id="activeCount">0</span>
+  </div>
+  <div id="dashboard-markets"></div>
+</div>
+
+<!-- ═══════════════ PORTFOLIO VIEW ═══════════════ -->
+<div id="tab-portfolio" class="view">
+  <div class="portfolio-stats">
+    <div class="pstat">
+      <div class="pstat-val gold" id="pf-balance">5,000</div>
+      <div class="pstat-label">🪙 Balance</div>
+    </div>
+    <div class="pstat">
+      <div class="pstat-val" id="pf-positions">0</div>
+      <div class="pstat-label">📊 Open Positions</div>
+    </div>
+    <div class="pstat">
+      <div class="pstat-val green" id="pf-pnl">+0</div>
+      <div class="pstat-label">💰 Unrealized P&L</div>
+    </div>
+  </div>
+
+  <div class="section-title">📊 Open Positions</div>
+  <div id="portfolio-positions"></div>
+
+  <div class="section-title" style="margin-top:18px">📜 Live Activity Feed</div>
+  <div class="feed">
+    <div class="feed-header"><div class="feed-dot"></div> Stream Activity</div>
+    <div class="feed-list" id="activity-feed"></div>
+  </div>
+</div>
+
+<!-- RESOLVE MODAL -->
+<div class="modal-overlay" id="resolveModal">
+  <div class="modal">
+    <div class="modal-title">⚖️ Resolve Market</div>
+    <div class="modal-q" id="modalQuestion"></div>
+    <div class="modal-actions">
+      <button class="modal-btn modal-btn-yes" onclick="confirmResolve('YES')">✅ Resolve YES</button>
+      <button class="modal-btn modal-btn-no" onclick="confirmResolve('NO')">❌ Resolve NO</button>
+      <button class="modal-btn modal-btn-cancel" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+// ═══════════════════════════════════════════════
+// STATE
+// ═══════════════════════════════════════════════
+let balance = 5000;
+let totalPnl = 0;
+let resolveTargetId = null;
+let currentFilter = 'all';
+
+const catEmoji = { kills: '🎯', chat: '💬', game: '🎮', meta: '😤' };
+const AMM_IMPACT = 0.006;
+
+let markets = [
+  {
+    id: 1, category: 'kills',
+    question: 'Will this streamer get 20+ kills this session?',
+    yesPool: 3250, noPool: 1750,
+    expiry: 'stream', timeLeft: 5400,
+    resolved: false, resolvedOutcome: null, bets: []
+  },
+  {
+    id: 2, category: 'chat',
+    question: 'Will chat hit 10k messages in the next 30 min?',
+    yesPool: 1600, noPool: 2400,
+    expiry: '30min', timeLeft: 1800,
+    resolved: false, resolvedOutcome: null, bets: []
+  },
+  {
+    id: 3, category: 'meta',
+    question: 'Will the streamer rage quit before hour 3?',
+    yesPool: 880, noPool: 3120,
+    expiry: '3hr', timeLeft: 10800,
+    resolved: false, resolvedOutcome: null, bets: []
+  },
+  {
+    id: 4, category: 'game',
+    question: 'Will they beat the boss on this attempt?',
+    yesPool: 2750, noPool: 2250,
+    expiry: 'manual', timeLeft: null,
+    resolved: false, resolvedOutcome: null, bets: []
+  }
+];
+
+let feedItems = [];
+const FAKE_NAMES = ['xXSlayer99', 'chat_goblin', 'pogchamp3k', 'NightOwl_TV', 'lurker2099', 'frost_byte_', 'QueuePopper', 'vibecheck_', 'SteelFoxTTV', 'noclipmode', 'BabyRageTV', 'monkaS_fan'];
+
+// ═══════════════════════════════════════════════
+// AMM MATH
+// ═══════════════════════════════════════════════
+function getYesOdds(m) {
+  const total = m.yesPool + m.noPool;
+  return Math.round((m.yesPool / total) * 100);
+}
+function getNoOdds(m) { return 100 - getYesOdds(m); }
+function getPayout(m, side) {
+  const odds = side === 'YES' ? getYesOdds(m) : getNoOdds(m);
+  return (100 / Math.max(1, odds)).toFixed(2);
+}
+function applyBet(m, side, amount) {
+  const impact = amount * AMM_IMPACT;
+  if (side === 'YES') {
+    m.yesPool += amount;
+    m.noPool = Math.max(100, m.noPool - impact * 0.25);
+  } else {
+    m.noPool += amount;
+    m.yesPool = Math.max(100, m.yesPool - impact * 0.25);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// FORMATTING
+// ═══════════════════════════════════════════════
+function fmtNum(n) { return Math.round(n).toLocaleString(); }
+function fmtTimer(s) {
+  if (s === null) return 'Manual';
+  if (s <= 0) return 'Expired';
+  const h = Math.floor(s / 3600);
+  const m = Math.floor((s % 3600) / 60);
+  const sec = s % 60;
+  if (h > 0) return h + 'h ' + m + 'm';
+  if (m > 0) return m + 'm ' + sec + 's';
+  return sec + 's';
+}
+function fmtVol(m) { return fmtNum(m.yesPool + m.noPool); }
+
+// ═══════════════════════════════════════════════
+// RENDER: VIEWER
+// ═══════════════════════════════════════════════
+function renderViewer() {
+  const container = document.getElementById('viewer-markets');
+  const visible = markets.filter(m => !m.resolved && (currentFilter === 'all' || m.category === currentFilter));
+  if (visible.length === 0) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">🔮</div><div>No active markets in this category</div></div>';
+    return;
+  }
+  container.innerHTML = visible.map(m => buildMarketCard(m)).join('');
+}
+
+function buildMarketCard(m) {
+  const yp = getYesOdds(m);
+  const np = getNoOdds(m);
+  const pyYes = getPayout(m, 'YES');
+  const pyNo = getPayout(m, 'NO');
+  const vol = fmtVol(m);
+  const timer = m.timeLeft !== null ? fmtTimer(m.timeLeft) : 'Manual';
+  const urgent = m.timeLeft !== null && m.timeLeft < 300;
+  const myYesBet = m.bets.filter(b => b.side === 'YES').reduce((a,b) => a+b.amount, 0);
+  const myNoBet = m.bets.filter(b => b.side === 'NO').reduce((a,b) => a+b.amount, 0);
+
+  let positionHTML = '';
+  if (myYesBet > 0 || myNoBet > 0) {
+    const side = myYesBet >= myNoBet ? 'YES' : 'NO';
+    const amt = side === 'YES' ? myYesBet : myNoBet;
+    const odds = side === 'YES' ? yp : np;
+    const potWin = Math.round(amt * (100 / Math.max(1, odds)));
+    const pnl = potWin - amt;
+    positionHTML = '<div class="position-badge">' +
+      '<span class="pos-side ' + side.toLowerCase() + '">' + side + '</span>' +
+      '<span class="pos-amount">🪙 ' + fmtNum(amt) + ' staked</span>' +
+      '<span class="pos-pnl ' + (pnl >= 0 ? 'green' : 'red') + '">' + (pnl >= 0 ? '+' : '') + fmtNum(pnl) + ' est.</span>' +
+      '</div>';
+  }
+
+  return '<div class="card" id="card-' + m.id + '" data-cat="' + m.category + '">' +
+    '<div class="card-header"><div>' +
+    '<div class="card-title">' + m.question + '</div>' +
+    '<div class="card-meta">' +
+    '<span class="tag live">LIVE</span>' +
+    '<span class="tag category">' + catEmoji[m.category] + ' ' + m.category + '</span>' +
+    '</div></div></div>' +
+
+    '<div class="odds-bar-wrap">' +
+    '<div class="odds-bar"><div class="odds-bar-fill" id="bar-' + m.id + '" style="width:' + yp + '%"></div></div>' +
+    '<div class="odds-labels">' +
+    '<div><div class="odds-yes" id="yes-pct-' + m.id + '">' + yp + '% YES</div>' +
+    '<div class="odds-payout" id="yes-pay-' + m.id + '">×' + pyYes + ' payout</div></div>' +
+    '<div style="text-align:right"><div class="odds-no" id="no-pct-' + m.id + '">' + np + '% NO</div>' +
+    '<div class="odds-payout" style="text-align:right" id="no-pay-' + m.id + '">×' + pyNo + ' payout</div></div>' +
+    '</div></div>' +
+
+    '<div class="bet-amount-row">' +
+    '<div class="bet-input-wrap">' +
+    '<span class="bet-input-prefix">🪙</span>' +
+    '<input class="bet-input" id="amount-' + m.id + '" type="number" value="100" min="10" placeholder="100" />' +
+    '</div>' +
+    '<div class="quick-amounts">' +
+    '<button class="quick-btn" onclick="setAmount(' + m.id + ',100)">100</button>' +
+    '<button class="quick-btn" onclick="setAmount(' + m.id + ',500)">500</button>' +
+    '<button class="quick-btn" onclick="setAmount(' + m.id + ',1000)">1K</button>' +
+    '</div></div>' +
+
+    '<div class="bet-row">' +
+    '<button class="bet-btn bet-btn-yes' + (myYesBet > 0 ? ' has-position' : '') + '" onclick="placeBet(' + m.id + ',\'YES\')" id="btn-yes-' + m.id + '">' +
+    '<span class="btn-label">✅ YES</span>' +
+    '<span class="btn-odds" id="btn-yes-odds-' + m.id + '">' + yp + '%</span>' +
+    '<span class="btn-payout" id="btn-yes-pay-' + m.id + '">win ×' + pyYes + '</span>' +
+    '</button>' +
+    '<button class="bet-btn bet-btn-no' + (myNoBet > 0 ? ' has-position' : '') + '" onclick="placeBet(' + m.id + ',\'NO\')" id="btn-no-' + m.id + '">' +
+    '<span class="btn-label">❌ NO</span>' +
+    '<span class="btn-odds" id="btn-no-odds-' + m.id + '">' + np + '%</span>' +
+    '<span class="btn-payout" id="btn-no-pay-' + m.id + '">win ×' + pyNo + '</span>' +
+    '</button></div>' +
+
+    positionHTML +
+
+    '<div class="market-footer">' +
+    '<div class="vol-item">🪙 ' + vol + ' vol</div>' +
+    '<div class="vol-item">👥 ' + Math.floor((m.yesPool + m.noPool) / 130) + ' bettors</div>' +
+    '<div class="timer' + (urgent ? ' urgent' : '') + '" id="timer-' + m.id + '">' + timer + '</div>' +
+    '</div></div>';
+}
+
+// ═══════════════════════════════════════════════
+// RENDER: DASHBOARD
+// ═══════════════════════════════════════════════
+function renderDashboard() {
+  const active = markets.filter(m => !m.resolved);
+  document.getElementById('activeCount').textContent = active.length;
+  const container = document.getElementById('dashboard-markets');
+  if (active.length === 0) {
+    container.innerHTML = '<div class="empty"><div class="empty-icon">🎯</div><div>No active markets — create one above!</div></div>';
+    return;
+  }
+  container.innerHTML = active.map(function(m) {
+    const yp = getYesOdds(m);
+    const np = getNoOdds(m);
+    const vol = fmtVol(m);
+    const timer = m.timeLeft !== null ? fmtTimer(m.timeLeft) : 'Manual';
+    return '<div class="market-dash-card">' +
+      '<div class="market-dash-header"><div style="flex:1">' +
+      '<div style="font-weight:700;font-size:14px;margin-bottom:4px">' + m.question + '</div>' +
+      '<div class="card-meta">' +
+      '<span class="tag live">LIVE</span>' +
+      '<span class="tag category">' + catEmoji[m.category] + ' ' + m.category + '</span>' +
+      '<span class="tag">' + timer + '</span>' +
+      '</div></div></div>' +
+      '<div class="market-dash-body">' +
+      '<div class="stat-row">' +
+      '<div class="stat"><div class="stat-val yes-col">' + yp + '%</div><div>YES</div></div>' +
+      '<div class="stat"><div class="stat-val no-col">' + np + '%</div><div>NO</div></div>' +
+      '<div class="stat"><div class="stat-val">🪙 ' + vol + '</div><div>Volume</div></div>' +
+      '<div class="stat"><div class="stat-val">' + Math.floor((m.yesPool + m.noPool) / 130) + '</div><div>Bettors</div></div>' +
+      '</div>' +
+      '<div class="dash-actions"><button class="btn-resolve" onclick="openResolveModal(' + m.id + ')">⚖️ Resolve Market</button></div>' +
+      '</div></div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// RENDER: PORTFOLIO
+// ═══════════════════════════════════════════════
+function renderPortfolio() {
+  document.getElementById('pf-balance').textContent = fmtNum(balance);
+  const positions = [];
+  markets.forEach(function(m) {
+    const yesAmt = m.bets.filter(b => b.side === 'YES').reduce((a,b) => a+b.amount, 0);
+    const noAmt  = m.bets.filter(b => b.side === 'NO').reduce((a,b) => a+b.amount, 0);
+    if (yesAmt > 0) positions.push({market: m, side: 'YES', amount: yesAmt});
+    if (noAmt  > 0) positions.push({market: m, side: 'NO',  amount: noAmt});
+  });
+  document.getElementById('pf-positions').textContent = positions.length;
+
+  let unrealPnl = 0;
+  positions.forEach(function(p) {
+    const odds = p.side === 'YES' ? getYesOdds(p.market) : getNoOdds(p.market);
+    unrealPnl += Math.round(p.amount * (100 / Math.max(1, odds))) - p.amount;
+  });
+  const totalDisplay = totalPnl + unrealPnl;
+  const pnlEl = document.getElementById('pf-pnl');
+  pnlEl.textContent = (totalDisplay >= 0 ? '+' : '') + fmtNum(totalDisplay);
+  pnlEl.className = 'pstat-val ' + (totalDisplay >= 0 ? 'green' : 'red');
+
+  const posContainer = document.getElementById('portfolio-positions');
+  if (positions.length === 0) {
+    posContainer.innerHTML = '<div class="empty"><div class="empty-icon">💼</div><div>No open positions yet — place some bets!</div></div>';
+  } else {
+    posContainer.innerHTML = positions.map(function(p) {
+      const odds = p.side === 'YES' ? getYesOdds(p.market) : getNoOdds(p.market);
+      const potWin = Math.round(p.amount * (100 / Math.max(1, odds)));
+      const unreal = potWin - p.amount;
+      return '<div class="card">' +
+        '<div style="font-weight:700;font-size:13px;margin-bottom:8px;color:var(--text2)">' + p.market.question + '</div>' +
+        '<div style="display:flex;gap:12px;flex-wrap:wrap;font-size:13px;align-items:center">' +
+        '<span>Side: <strong style="color:' + (p.side==='YES'?'var(--yes)':'var(--no)') + '">' + p.side + '</strong></span>' +
+        '<span>Staked: <strong style="color:var(--gold)">🪙 ' + fmtNum(p.amount) + '</strong></span>' +
+        '<span>To win: <strong>🪙 ' + fmtNum(potWin) + '</strong></span>' +
+        '<span style="margin-left:auto">Unrealized: <strong style="color:' + (unreal>=0?'var(--yes)':'var(--no)') + '">' + (unreal>=0?'+':'') + fmtNum(unreal) + '</strong></span>' +
+        '</div></div>';
+    }).join('');
+  }
+  renderFeed();
+}
+
+function renderFeed() {
+  const el = document.getElementById('activity-feed');
+  if (feedItems.length === 0) {
+    el.innerHTML = '<div class="feed-item" style="color:var(--text3)">Waiting for activity...</div>';
+    return;
+  }
+  el.innerHTML = feedItems.slice(-25).reverse().map(function(f) {
+    return '<div class="feed-item">' +
+      '<span style="color:var(--twitch-light);font-weight:600">' + f.user + '</span>' +
+      '&nbsp;bet&nbsp;' +
+      '<span class="feed-side ' + f.side.toLowerCase() + '">' + f.side + '</span>' +
+      '&nbsp;<span class="feed-amount">🪙' + fmtNum(f.amount) + '</span>' +
+      '&nbsp;on&nbsp;"' + f.question.substring(0,28) + '..."' +
+      '<span class="feed-time">' + f.time + '</span>' +
+      '</div>';
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════
+// ACTIONS
+// ═══════════════════════════════════════════════
+function placeBet(marketId, side) {
+  const m = markets.find(x => x.id === marketId);
+  if (!m || m.resolved) return;
+  const amtInput = document.getElementById('amount-' + marketId);
+  const amount = parseInt(amtInput.value) || 100;
+  if (amount < 10) { showToast('Minimum bet is 🪙 10', 'error'); return; }
+  if (amount > balance) { showToast('Not enough coins! 💸', 'error'); return; }
+
+  const oddsAtBet = side === 'YES' ? getYesOdds(m) : getNoOdds(m);
+  balance -= amount;
+  document.getElementById('balanceDisplay').textContent = fmtNum(balance);
+  applyBet(m, side, amount);
+  m.bets.push({ side, amount, oddsAtBet });
+
+  feedItems.push({
+    user: 'You', side, amount,
+    question: m.question,
+    time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+  });
+
+  showToast('🎲 ' + side + ' — 🪙 ' + fmtNum(amount) + ' placed!', 'success');
+
+  const card = document.getElementById('card-' + marketId);
+  if (card) {
+    card.classList.remove('flash-yes', 'flash-no');
+    void card.offsetWidth;
+    card.classList.add(side === 'YES' ? 'flash-yes' : 'flash-no');
+  }
+
+  updateMarketUI(m);
+  renderDashboard();
+  renderPortfolio();
+}
+
+function updateMarketUI(m) {
+  const yp = getYesOdds(m);
+  const np = getNoOdds(m);
+  const pyYes = getPayout(m, 'YES');
+  const pyNo  = getPayout(m, 'NO');
+  const s = function(id, v) { const el = document.getElementById(id); if(el) el.textContent = v; };
+  s('yes-pct-'      + m.id, yp + '% YES');
+  s('no-pct-'       + m.id, np + '% NO');
+  s('yes-pay-'      + m.id, '×' + pyYes + ' payout');
+  s('no-pay-'       + m.id, '×' + pyNo  + ' payout');
+  s('btn-yes-odds-' + m.id, yp + '%');
+  s('btn-no-odds-'  + m.id, np + '%');
+  s('btn-yes-pay-'  + m.id, 'win ×' + pyYes);
+  s('btn-no-pay-'   + m.id, 'win ×' + pyNo);
+  const bar = document.getElementById('bar-' + m.id);
+  if (bar) bar.style.width = yp + '%';
+}
+
+function setAmount(marketId, val) {
+  const el = document.getElementById('amount-' + marketId);
+  if (el) el.value = val;
+}
+
+function createMarket() {
+  const q = document.getElementById('newQuestion').value.trim();
+  const odds = parseInt(document.getElementById('newYesOdds').value);
+  const expiry = document.getElementById('newExpiry').value;
+  const cat = document.getElementById('newCategory').value;
+  if (!q) { showToast('Enter a market question!', 'error'); return; }
+  if (isNaN(odds) || odds < 1 || odds > 99) { showToast('Odds must be between 1 and 99', 'error'); return; }
+
+  const expiryMap = { stream: 18000, '30min': 1800, '1hr': 3600, '2hr': 7200, manual: null };
+  const total = 2000;
+  const yesPool = Math.round(total * odds / 100);
+  const newId = Math.max(0, ...markets.map(m=>m.id)) + 1;
+
+  markets.push({
+    id: newId, category: cat, question: q,
+    yesPool: yesPool, noPool: total - yesPool,
+    expiry: expiry, timeLeft: expiryMap[expiry],
+    resolved: false, resolvedOutcome: null, bets: []
+  });
+
+  document.getElementById('newQuestion').value = '';
+  document.getElementById('newYesOdds').value = '50';
+  showToast('🚀 Market launched: "' + q.substring(0,30) + '..."', 'info');
+  renderDashboard();
+  renderViewer();
+}
+
+function openResolveModal(id) {
+  resolveTargetId = id;
+  const m = markets.find(x => x.id === id);
+  document.getElementById('modalQuestion').textContent = m.question;
+  document.getElementById('resolveModal').classList.add('open');
+}
+function closeModal() {
+  document.getElementById('resolveModal').classList.remove('open');
+  resolveTargetId = null;
+}
+function confirmResolve(outcome) {
+  const m = markets.find(x => x.id === resolveTargetId);
+  if (!m) { closeModal(); return; }
+  m.resolved = true;
+  m.resolvedOutcome = outcome;
+
+  let winnings = 0;
+  let totalStaked = 0;
+  m.bets.forEach(function(b) {
+    totalStaked += b.amount;
+    if (b.side === outcome) {
+      winnings += Math.round(b.amount * (100 / Math.max(1, b.oddsAtBet)));
+    }
+  });
+
+  if (winnings > 0) {
+    balance += winnings;
+    totalPnl += winnings - totalStaked;
+    document.getElementById('balanceDisplay').textContent = fmtNum(balance);
+    showToast('🏆 Market resolved ' + outcome + '! You won 🪙 ' + fmtNum(winnings) + '!', 'success');
+  } else if (totalStaked > 0) {
+    totalPnl -= totalStaked;
+    showToast('Market resolved ' + outcome + '. Better luck next time! 😬', 'info');
+  } else {
+    showToast('Market resolved: ' + outcome, 'info');
+  }
+
+  closeModal();
+  renderAll();
+}
+
+// ═══════════════════════════════════════════════
+// SIMULATION
+// ═══════════════════════════════════════════════
+function simulateActivity() {
+  const active = markets.filter(m => !m.resolved);
+  if (active.length === 0) return;
+  const m = active[Math.floor(Math.random() * active.length)];
+  const side = Math.random() < 0.52 ? 'YES' : 'NO'; // slight YES bias for excitement
+  const amount = [50, 100, 100, 200, 500, 1000][Math.floor(Math.random() * 6)];
+  const user = FAKE_NAMES[Math.floor(Math.random() * FAKE_NAMES.length)];
+
+  applyBet(m, side, amount);
+  feedItems.push({
+    user: user, side: side, amount: amount,
+    question: m.question,
+    time: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})
+  });
+
+  updateMarketUI(m);
+  const card = document.getElementById('card-' + m.id);
+  if (card) {
+    card.classList.remove('flash-yes', 'flash-no');
+    void card.offsetWidth;
+    card.classList.add(side === 'YES' ? 'flash-yes' : 'flash-no');
+  }
+
+  // update portfolio feed if on that tab
+  const feedEl = document.getElementById('activity-feed');
+  if (feedEl) renderFeed();
+}
+
+// ═══════════════════════════════════════════════
+// TIMER
+// ═══════════════════════════════════════════════
+function tick() {
+  markets.forEach(function(m) {
+    if (m.timeLeft !== null && m.timeLeft > 0 && !m.resolved) {
+      m.timeLeft--;
+      const el = document.getElementById('timer-' + m.id);
+      if (el) {
+        el.textContent = fmtTimer(m.timeLeft);
+        el.className = 'timer' + (m.timeLeft < 300 ? ' urgent' : '');
+      }
+    }
+  });
+}
+
+// ═══════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════
+function switchTab(name) {
+  const tabNames = ['viewer', 'dashboard', 'portfolio'];
+  document.querySelectorAll('.tab').forEach(function(t, i) {
+    t.classList.toggle('active', tabNames[i] === name);
+  });
+  document.querySelectorAll('.view').forEach(function(v) { v.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  if (name === 'viewer')    renderViewer();
+  if (name === 'dashboard') renderDashboard();
+  if (name === 'portfolio') renderPortfolio();
+}
+
+function filterMarkets(el, cat) {
+  currentFilter = cat;
+  document.querySelectorAll('.filter-chip').forEach(function(c) { c.classList.remove('active'); });
+  el.classList.add('active');
+  renderViewer();
+}
+
+// ═══════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════
+function showToast(msg, type) {
+  type = type || 'info';
+  const container = document.getElementById('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = 'toast ' + type;
+  toast.textContent = msg;
+  container.appendChild(toast);
+  setTimeout(function() {
+    toast.classList.add('toast-out');
+    setTimeout(function() { toast.remove(); }, 250);
+  }, 3500);
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+function renderAll() {
+  renderViewer();
+  renderDashboard();
+  renderPortfolio();
+}
+
+renderAll();
+setInterval(tick, 1000);
+
+// Staggered simulation intervals for organic feel
+setInterval(simulateActivity, 3800);
+setInterval(simulateActivity, 6200);
+setInterval(simulateActivity, 9100);
+</script>
+</body>
+</html>
